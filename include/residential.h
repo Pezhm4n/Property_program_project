@@ -14,19 +14,21 @@ extern "C" {
 
 /**
  * @struct ResidentialProperty
- * @brief ساختار ذخیره‌سازی اطلاعات ملک مسکونی
+ * @brief ساختار ذخیره‌سازی اطلاعات املاک مسکونی
  */
 typedef struct {
-    BaseProperty base;         /**< اطلاعات پایه ملک */
-    char propertyType[20];     /**< نوع ملک مسکونی (آپارتمان، ویلایی و غیره) */
-    int buildingAge;           /**< سن ساختمان (سال) */
-    float areaSize;            /**< متراژ (مترمربع) */
-    int floor;                 /**< طبقه */
-    float landArea;            /**< متراژ زمین (برای ویلایی) */
-    int bedrooms;              /**< تعداد اتاق خواب */
-    double sellingPrice;       /**< قیمت فروش (تومان) */
-    double mortgageAmount;     /**< مبلغ رهن (تومان) */
-    double monthlyRentAmount;  /**< مبلغ اجاره ماهیانه (تومان) */
+    BaseProperty base;              /**< اطلاعات پایه ملک */
+    int buildingAge;                /**< سن ساختمان (سال) */
+    float areaSize;                 /**< مساحت (مترمربع) */
+    int bedrooms;                   /**< تعداد اتاق خواب */
+    int floor;                      /**< طبقه */
+    int totalFloors;                /**< تعداد کل طبقات ساختمان */
+    int hasElevator;                /**< دارای آسانسور (1: بله، 0: خیر) */
+    int hasParking;                 /**< دارای پارکینگ (1: بله، 0: خیر) */
+    int hasStorage;                 /**< دارای انباری (1: بله، 0: خیر) */
+    double sellingPrice;            /**< قیمت فروش (تومان) */
+    double mortgageAmount;          /**< مبلغ رهن (تومان) */
+    double monthlyRentAmount;       /**< مبلغ اجاره ماهیانه (تومان) */
 } ResidentialProperty;
 
 /**
@@ -53,41 +55,41 @@ int residential_register_rental(ResidentialProperty* property, const char* usern
  * @param district منطقه شهرداری (0 برای همه مناطق)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_by_district(int district, PropertyDealType dealType, int* count);
 
 /**
- * @brief استخراج و جستجوی املاک مسکونی بر اساس محدوده سن ساختمان
+ * @brief استخراج و جستجوی املاک مسکونی بر اساس سن ساختمان
  * 
- * @param minAge حداقل سن (0 برای بدون محدودیت)
- * @param maxAge حداکثر سن (0 برای بدون محدودیت)
+ * @param maxAge حداکثر سن ساختمان (سال)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
-ResidentialProperty* residential_find_by_age(int minAge, int maxAge, PropertyDealType dealType, int* count);
+ResidentialProperty* residential_find_by_age(int maxAge, PropertyDealType dealType, int* count);
 
 /**
- * @brief استخراج و جستجوی املاک مسکونی بر اساس محدوده متراژ
+ * @brief استخراج و جستجوی املاک مسکونی بر اساس محدوده مساحت
  * 
- * @param minArea حداقل متراژ (0 برای بدون محدودیت)
- * @param maxArea حداکثر متراژ (0 برای بدون محدودیت)
+ * @param minArea حداقل مساحت (0 برای بدون محدودیت)
+ * @param maxArea حداکثر مساحت (0 برای بدون محدودیت)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_by_area(float minArea, float maxArea, PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج و جستجوی املاک مسکونی بر اساس تعداد اتاق خواب
  * 
- * @param bedrooms تعداد اتاق خواب مورد نظر (0 برای همه)
+ * @param minBedrooms حداقل تعداد اتاق خواب (0 برای بدون محدودیت)
+ * @param maxBedrooms حداکثر تعداد اتاق خواب (0 برای بدون محدودیت)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
-ResidentialProperty* residential_find_by_bedrooms(int bedrooms, PropertyDealType dealType, int* count);
+ResidentialProperty* residential_find_by_bedrooms(int minBedrooms, int maxBedrooms, PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج و جستجوی املاک مسکونی بر اساس محدوده قیمت
@@ -96,20 +98,47 @@ ResidentialProperty* residential_find_by_bedrooms(int bedrooms, PropertyDealType
  * @param maxPrice حداکثر قیمت (0 برای بدون محدودیت)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_by_price(double minPrice, double maxPrice, PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج و جستجوی املاک مسکونی بر اساس طبقه
  * 
- * @param minFloor حداقل طبقه (0 برای همکف، منفی برای زیرزمین)
- * @param maxFloor حداکثر طبقه
+ * @param minFloor حداقل طبقه (0 برای بدون محدودیت)
+ * @param maxFloor حداکثر طبقه (0 برای بدون محدودیت)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_by_floor(int minFloor, int maxFloor, PropertyDealType dealType, int* count);
+
+/**
+ * @brief استخراج املاک مسکونی دارای آسانسور
+ * 
+ * @param dealType نوع معامله (فروش/اجاره)
+ * @param count خروجی: تعداد املاک یافت شده
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
+ */
+ResidentialProperty* residential_find_with_elevator(PropertyDealType dealType, int* count);
+
+/**
+ * @brief استخراج املاک مسکونی دارای پارکینگ
+ * 
+ * @param dealType نوع معامله (فروش/اجاره)
+ * @param count خروجی: تعداد املاک یافت شده
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
+ */
+ResidentialProperty* residential_find_with_parking(PropertyDealType dealType, int* count);
+
+/**
+ * @brief استخراج املاک مسکونی دارای انباری
+ * 
+ * @param dealType نوع معامله (فروش/اجاره)
+ * @param count خروجی: تعداد املاک یافت شده
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
+ */
+ResidentialProperty* residential_find_with_storage(PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج املاک مسکونی حذف شده در بازه زمانی مشخص
@@ -118,10 +147,10 @@ ResidentialProperty* residential_find_by_floor(int minFloor, int maxFloor, Prope
  * @param endDate تاریخ پایان بازه (فرمت YYYY-MM-DD)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_deleted_by_date(const char* startDate, const char* endDate, 
-                                                    PropertyDealType dealType, int* count);
+                                                  PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج املاک مسکونی ثبت شده توسط کاربر خاص
@@ -129,7 +158,7 @@ ResidentialProperty* residential_find_deleted_by_date(const char* startDate, con
  * @param username نام کاربری
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
- * @return ResidentialProperty* آرایه‌ای از املاک مسکونی یافت شده (باید با residential_free_array آزاد شود)
+ * @return ResidentialProperty* آرایه‌ای از املاک یافت شده (باید با residential_free_array آزاد شود)
  */
 ResidentialProperty* residential_find_by_user(const char* username, PropertyDealType dealType, int* count);
 

@@ -1,77 +1,86 @@
-# Makefile for Property Management Library
+# Makefile برای پروژه مدیریت املاک
+# متغیرهای مسیر
+SRCDIR = src
+INCDIR = include
+OBJDIR = obj
+LIBDIR = lib
+TESTDIR = test
+BINDIR = bin
 
-# کامپایلر C
-CC=gcc
-
-# پرچم‌های کامپایلر
-CFLAGS=-Wall -Wextra -pedantic -std=c11 -fPIC -I./include
-
-# فایل‌های سورس
-SRC_DIR=src
-SRC_FILES=$(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES=$(SRC_FILES:.c=.o)
-
-# نام کتابخانه
-LIB_NAME=property_lib
-
-# مسیر کتابخانه
-LIB_DIR=lib
+# کامپایلر و فلگ‌ها
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99 -I$(INCDIR)
+LDFLAGS = -shared
 
 # تشخیص سیستم عامل
-UNAME:=$(shell uname)
-ifeq ($(UNAME), Linux)
-    LIB_EXTENSION=so
-    LIB_FLAGS=-shared
+ifeq ($(OS),Windows_NT)
+    SHARED_LIB = $(LIBDIR)/property_lib.dll
+    SHARED_FLAG = -shared
+    RM_CMD = del /F /Q
+    MKDIR_CMD = mkdir
+    PATH_SEP = \\
+else
+    SHARED_LIB = $(LIBDIR)/libproperty.so
+    SHARED_FLAG = -shared -fPIC
+    CFLAGS += -fPIC
+    RM_CMD = rm -f
+    MKDIR_CMD = mkdir -p
+    PATH_SEP = /
 endif
-ifeq ($(UNAME), Darwin)
-    LIB_EXTENSION=dylib
-    LIB_FLAGS=-dynamiclib
-endif
-ifeq ($(OS), Windows_NT)
-    LIB_EXTENSION=dll
-    LIB_FLAGS=-shared
-endif
 
-# نام کامل کتابخانه
-SHARED_LIB=$(LIB_DIR)/lib$(LIB_NAME).$(LIB_EXTENSION)
+# لیست فایل‌های منبع
+SOURCES = $(wildcard $(SRCDIR)/*.c)
+OBJECTS = $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
+HEADERS = $(wildcard $(INCDIR)/*.h)
 
-# مسیر پوشه‌های خروجی
-OUTPUT_DIRS=$(LIB_DIR)
+# همه هدف‌ها
+.PHONY: all clean directories test
 
-# ساخت کتابخانه
-all: $(OUTPUT_DIRS) $(SHARED_LIB)
+all: directories $(SHARED_LIB)
 
-# ساخت پوشه‌های خروجی
-$(OUTPUT_DIRS):
-	mkdir -p $@
+# ایجاد دایرکتوری‌های مورد نیاز
+directories:
+	@if not exist $(OBJDIR) $(MKDIR_CMD) $(OBJDIR)
+	@if not exist $(LIBDIR) $(MKDIR_CMD) $(LIBDIR)
+	@if not exist $(BINDIR) $(MKDIR_CMD) $(BINDIR)
 
-# ساخت کتابخانه اشتراکی
-$(SHARED_LIB): $(OBJ_FILES)
-	$(CC) $(LIB_FLAGS) -o $@ $^ $(LDFLAGS)
+# قانون‌های ساخت
+$(SHARED_LIB): $(OBJECTS)
+	$(CC) $(SHARED_FLAG) -o $@ $^ $(LDFLAGS)
+	@echo "کتابخانه با موفقیت ساخته شد: $(SHARED_LIB)"
 
-# قوانین کامپایل فایل‌های .c به .o
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# نصب کتابخانه
-install:
-	mkdir -p $(DESTDIR)/usr/local/lib
-	mkdir -p $(DESTDIR)/usr/local/include/$(LIB_NAME)
-	cp $(SHARED_LIB) $(DESTDIR)/usr/local/lib/
-	cp include/*.h $(DESTDIR)/usr/local/include/$(LIB_NAME)/
+# ساخت برنامه تست
+test: directories $(SHARED_LIB)
+	$(CC) $(CFLAGS) -o $(BINDIR)/test_property $(TESTDIR)/test_property.c -L$(LIBDIR) -lproperty
+	@echo "برنامه تست با موفقیت ساخته شد: $(BINDIR)/test_property"
 
-# پاک کردن فایل‌های موقت و کتابخانه
+# تمیز کردن فایل‌های تولید شده
 clean:
-	rm -f $(SRC_DIR)/*.o
-	rm -f $(SHARED_LIB)
+	$(RM_CMD) $(OBJDIR)$(PATH_SEP)*.o
+	$(RM_CMD) $(SHARED_LIB)
+	$(RM_CMD) $(BINDIR)$(PATH_SEP)*
 
-# ساخت مثال‌ها
-examples: $(SHARED_LIB)
-	$(CC) $(CFLAGS) -o examples/user_example examples/user_example.c -L$(LIB_DIR) -l$(LIB_NAME)
-	$(CC) $(CFLAGS) -o examples/property_example examples/property_example.c -L$(LIB_DIR) -l$(LIB_NAME)
+# قوانین خاص برای کامپایل فایل‌های منبع اصلی
+$(OBJDIR)/property.o: $(SRCDIR)/property.c $(INCDIR)/property.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# ایجاد مستندات با Doxygen
-docs:
-	doxygen Doxyfile
+$(OBJDIR)/residential.o: $(SRCDIR)/residential.c $(INCDIR)/residential.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: all clean install examples docs 
+$(OBJDIR)/commercial.o: $(SRCDIR)/commercial.c $(INCDIR)/commercial.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/land.o: $(SRCDIR)/land.c $(INCDIR)/land.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/user.o: $(SRCDIR)/user.c $(INCDIR)/user.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/data_manager.o: $(SRCDIR)/data_manager.c $(INCDIR)/data_manager.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)/utils.o: $(SRCDIR)/utils.c $(INCDIR)/utils.h
+	$(CC) $(CFLAGS) -c $< -o $@ 
