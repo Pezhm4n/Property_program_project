@@ -1,0 +1,278 @@
+2025-04-30 17:18:29,219 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:18:29,301 - property_management.user_management - WARNING - فایل کاربران یافت نشد: C:\Users\Ariike.ir/property_management_users.json
+2025-04-30 17:18:29,303 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags()): argument 1 has unexpected type 'UserManager'
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 110, in main
+    login_dialog = LoginDialog(user_manager)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\login_dialog.py", line 28, in __init__
+    super().__init__(parent)
+TypeError: QDialog(parent: Optional[QWidget] = None, flags: Union[Qt.WindowFlags, Qt.WindowType] = Qt.WindowFlags()): argument 1 has unexpected type 'UserManager'
+2025-04-30 17:19:42,113 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:19:42,126 - property_management.user_management - WARNING - فایل کاربران یافت نشد: C:\Users\Ariike.ir/property_management_users.json
+2025-04-30 17:20:59,782 - property_management - INFO - کاربر از ورود به سیستم منصرف شد
+2025-04-30 17:21:08,699 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:21:08,772 - property_management.user_management - WARNING - فایل کاربران یافت نشد: C:\Users\Ariike.ir/property_management_users.json
+2025-04-30 17:21:28,249 - property_management - ERROR - خطا در احراز هویت
+2025-04-30 17:21:56,018 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:21:56,030 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:23:16,423 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:23:16,426 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: get_property_bridge() missing 1 required positional argument: 'property_type'
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 131, in main
+    main_window = MainWindow(current_user, user_manager)
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 51, in __init__
+    self.report_generator = ReportGenerator()
+  File "C:\c-programs\final\Property_program_project\property_management\report_generator.py", line 66, in __init__
+    self.property_bridge = get_property_bridge()
+TypeError: get_property_bridge() missing 1 required positional argument: 'property_type'
+2025-04-30 17:26:41,658 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:26:41,671 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:31:05,490 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:31:05,493 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:31:05,500 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:32:03,986 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:32:03,999 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:32:12,153 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:32:12,154 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:32:12,156 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:32:26,094 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: SearchTab.__init__() takes from 1 to 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 131, in main
+    main_window = MainWindow(current_user, user_manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 64, in __init__
+    self.init_ui()
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 100, in init_ui
+    self.search_tab = SearchTab(self.current_user, self.report_generator)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: SearchTab.__init__() takes from 1 to 2 positional arguments but 3 were given
+2025-04-30 17:33:40,282 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:33:40,295 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:33:48,402 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:33:48,404 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:33:48,406 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:33:54,921 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: 'SearchTab' object has no attribute 'results_table'
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 131, in main
+    main_window = MainWindow(current_user, user_manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 64, in __init__
+    self.init_ui()
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 100, in init_ui
+    self.search_tab = SearchTab(self.current_user, self.report_generator)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\search_tab.py", line 240, in __init__
+    self.setup_ui()
+  File "C:\c-programs\final\Property_program_project\ui\search_tab.py", line 284, in setup_ui
+    self.setup_search_filters(filters_layout)
+  File "C:\c-programs\final\Property_program_project\ui\search_tab.py", line 415, in setup_search_filters
+    self.on_property_type_changed(0)
+  File "C:\c-programs\final\Property_program_project\ui\search_tab.py", line 555, in on_property_type_changed
+    self.results_table.clear_results()
+    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'SearchTab' object has no attribute 'results_table'
+2025-04-30 17:36:14,663 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:36:14,676 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:36:26,288 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:36:26,289 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:36:26,292 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:36:30,148 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: ReportTab.__init__() takes from 1 to 2 positional arguments but 3 were given
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 131, in main
+    main_window = MainWindow(current_user, user_manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 64, in __init__
+    self.init_ui()
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 104, in init_ui
+    self.report_tab = ReportTab(self.current_user, self.report_generator)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: ReportTab.__init__() takes from 1 to 2 positional arguments but 3 were given
+2025-04-30 17:37:46,116 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:37:46,129 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:37:54,384 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:37:54,385 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:37:54,389 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:37:58,897 - property_management - ERROR - خطای ناگهانی در اجرای برنامه: 'ReportTab' object has no attribute 'generate_property_count_report'
+Traceback (most recent call last):
+  File "C:\c-programs\final\Property_program_project\property_management\main.py", line 131, in main
+    main_window = MainWindow(current_user, user_manager)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 64, in __init__
+    self.init_ui()
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 108, in init_ui
+    self.create_menus()
+  File "C:\c-programs\final\Property_program_project\ui\main_window.py", line 144, in create_menus
+    property_count_action.triggered.connect(self.report_tab.generate_property_count_report)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ReportTab' object has no attribute 'generate_property_count_report'
+2025-04-30 17:39:15,932 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:39:15,944 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:39:27,256 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:39:27,258 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:39:27,260 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:41:34,725 - property_management.report_generator - INFO - Property count report saved to C:\c-programs\final\Property_program_project\reports\property_count_report_all_20250430_174134.txt
+2025-04-30 17:41:39,350 - property_management.report_generator - INFO - Property count report saved to C:\c-programs\final\Property_program_project\reports\property_count_report_all_20250430_174139.txt
+2025-04-30 17:44:23,062 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:44:23,075 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:44:29,680 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:44:29,681 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:44:29,688 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:44:31,063 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:44:58,353 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 17:45:03,176 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 17:46:31,496 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:46:31,509 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:46:42,575 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:46:42,577 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:46:42,579 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:46:43,424 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:47:02,310 - property_management.charts - ERROR - Error creating pie chart: Invalid vertices array.
+2025-04-30 17:49:14,710 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:49:14,722 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:49:20,296 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:49:20,297 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:49:20,300 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:49:21,254 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:49:27,731 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 17:49:27,814 - property_management.charts - ERROR - Error creating bar chart: no numeric data to plot
+2025-04-30 17:51:35,552 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:51:35,565 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:55:00,992 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:55:00,994 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:55:00,996 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:55:01,994 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:56:59,270 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:56:59,283 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:57:05,680 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:57:05,681 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:57:05,684 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:57:06,770 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:58:01,946 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:58:01,959 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:58:09,745 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:58:09,747 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:58:09,749 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:58:10,855 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 17:58:16,098 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 17:58:16,161 - property_management.charts - ERROR - Error creating bar chart: no numeric data to plot
+2025-04-30 17:59:03,573 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 17:59:03,584 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 17:59:12,024 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 17:59:12,026 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:59:12,029 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 17:59:12,921 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:03:32,483 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:03:32,496 - property_management.user_management - ERROR - خطا در بارگذاری فایل کاربران: Expecting value: line 13 column 23 (char 428)
+2025-04-30 18:04:37,783 - property_management - ERROR - خطا در احراز هویت
+2025-04-30 18:05:13,079 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:05:13,090 - property_management.user_management - WARNING - فایل کاربران یافت نشد: C:\Users\Ariike.ir/property_management_users.json
+2025-04-30 18:05:22,739 - property_management - ERROR - خطا در احراز هویت
+2025-04-30 18:06:05,771 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:06:05,784 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:06:30,593 - property_management - INFO - کاربر از ورود به سیستم منصرف شد
+2025-04-30 18:06:45,196 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:06:45,208 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:07:26,639 - property_management - INFO - کاربر از ورود به سیستم منصرف شد
+2025-04-30 18:07:40,579 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:07:40,592 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:09:49,431 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:09:49,445 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:10:05,342 - property_management - INFO - کاربر از ورود به سیستم منصرف شد
+2025-04-30 18:10:39,730 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:10:39,743 - property_management.user_management - WARNING - فایل کاربران یافت نشد: C:\Users\Ariike.ir/property_management_users.json
+2025-04-30 18:10:49,300 - property_management - ERROR - خطا در احراز هویت
+2025-04-30 18:14:11,925 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:14:11,938 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:14:19,033 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:14:19,034 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:14:19,044 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:14:19,046 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:14:19,049 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:14:19,843 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:15:07,678 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:15:07,690 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:15:12,792 - property_management.user_management - WARNING - تلاش ورود ناموفق: کلمه عبور نادرست برای کاربر 'admin'
+2025-04-30 18:15:21,216 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:15:21,216 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:15:21,223 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:15:21,223 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:15:21,230 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:15:23,008 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:37:44,836 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:37:44,850 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:37:52,489 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:37:52,490 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:37:52,497 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:37:52,499 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:37:52,501 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:37:54,269 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:38:15,520 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 18:38:15,581 - property_management.charts - ERROR - Error creating bar chart: no numeric data to plot
+2025-04-30 18:40:26,354 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:40:26,367 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:40:43,545 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:40:43,545 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:40:43,550 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:40:43,551 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:40:43,551 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:40:44,639 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:44:07,182 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:44:07,194 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:44:17,152 - property_management - INFO - کاربر از ورود به سیستم منصرف شد
+2025-04-30 18:49:37,600 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:49:37,611 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:49:55,098 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:49:55,099 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:49:55,105 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:49:55,106 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:49:55,107 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:49:56,439 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:51:48,968 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 18:51:49,023 - property_management.charts - ERROR - Error creating bar chart: no numeric data to plot
+2025-04-30 18:56:19,828 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 18:56:19,839 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 18:56:28,088 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 18:56:28,089 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:56:28,095 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 18:56:28,097 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:56:28,098 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 18:56:28,245 - property_management.charts - ERROR - Error creating pie chart: None
+2025-04-30 18:56:29,735 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:56:29,856 - property_management.charts - ERROR - Error creating pie chart: None
+2025-04-30 18:56:30,413 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 18:56:41,553 - property_management.report_generator - WARNING - Property value report is only meaningful for sale properties. Setting deal_type to 1.
+2025-04-30 18:56:41,608 - property_management.charts - ERROR - Error creating bar chart: no numeric data to plot
+2025-04-30 19:00:01,184 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 19:00:01,197 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 19:00:10,600 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 19:00:10,602 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:00:10,607 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:00:10,608 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:00:10,609 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:00:10,691 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:00:11,794 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 19:00:11,888 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:00:12,319 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 19:10:06,507 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 19:10:06,519 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 19:10:19,138 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 19:10:19,139 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:10:19,142 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:10:19,144 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:10:19,145 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:10:19,227 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:10:20,067 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 19:10:20,161 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:10:20,568 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 19:15:23,553 - property_management - INFO - شروع برنامه مدیریت املاک
+2025-04-30 19:15:23,565 - property_management.user_management - INFO - 1 کاربر بارگذاری شد
+2025-04-30 19:15:46,940 - property_management.user_management - INFO - 1 کاربر ذخیره شد
+2025-04-30 19:15:46,941 - property_management.user_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:15:46,945 - property_management - INFO - کاربر 'admin' با موفقیت وارد سیستم شد
+2025-04-30 19:15:46,948 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:15:46,952 - property_management.report_generator - INFO - Report generator initialized with output directory: C:\c-programs\final\Property_program_project\reports
+2025-04-30 19:15:47,049 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:15:49,177 - property_management.report_generator - WARNING - No price data available for all properties
+2025-04-30 19:15:49,277 - property_management.charts - ERROR - ستون‌های مورد نیاز یافت نشدند: ستون برچسب 'None', ستون مقادیر 'None'
+2025-04-30 19:15:51,222 - property_management.report_generator - WARNING - No price data available for all properties

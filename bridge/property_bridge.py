@@ -13,9 +13,9 @@ import logging
 from datetime import datetime
 
 # وارد کردن ماژول‌های پل ارتباطی مختص به هر نوع ملک
-from .residential_bridge import ResidentialBridge, DEAL_TYPE_SALE, DEAL_TYPE_RENT
-from .commercial_bridge import CommercialBridge
-from .land_bridge import LandBridge
+from bridge.residential_bridge import ResidentialBridge, DEAL_TYPE_SALE, DEAL_TYPE_RENT
+from bridge.commercial_bridge import CommercialBridge
+from bridge.land_bridge import LandBridge
 
 # تنظیمات لاگ
 log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')

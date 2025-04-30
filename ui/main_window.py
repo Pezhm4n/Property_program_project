@@ -2,397 +2,361 @@
 # -*- coding: utf-8 -*-
 
 """
-پنجره اصلی برنامه مدیریت املاک
+ماژول پنجره اصلی
+این ماژول پیاده‌سازی پنجره اصلی برنامه مدیریت املاک را ارائه می‌دهد.
 """
 
 import os
-import ctypes
 import sys
-from PyQt5.QtWidgets import (QMainWindow, QAction, QToolBar, QStackedWidget, QWidget, 
-                           QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QMenu, 
-                           QStatusBar, QMessageBox, QToolButton, QSplitter, QFrame)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QPixmap, QFont
+import logging
+from PyQt5.QtWidgets import (
+    QMainWindow, QAction, QMenu, QToolBar, QStatusBar, QTabWidget,
+    QVBoxLayout, QWidget, QMessageBox, QDockWidget, QLabel, QComboBox
+)
+from PyQt5.QtCore import Qt, QSettings, QSize, QPoint
+from PyQt5.QtGui import QIcon
 
-from login_form import LoginForm
-from register_form import RegisterForm
-from property_form import PropertyForm
-from property_search_form import PropertySearchForm
+# وارد کردن ویجت‌های سفارشی
+from .residential_tab import ResidentialTab
+from .commercial_tab import CommercialTab
+from .land_tab import LandTab
+from .search_tab import SearchTab
+from .report_tab import ReportTab
+from .dashboard import Dashboard
+from .user_management_dialog import UserManagementDialog
+from .settings_dialog import SettingsDialog
+from .about_dialog import AboutDialog
+
+# وارد کردن سایر ماژول‌های مورد نیاز
+from property_management.report_generator import ReportGenerator
+from property_management.user_management import UserManager, User
+
 
 class MainWindow(QMainWindow):
     """پنجره اصلی برنامه مدیریت املاک"""
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, current_user, user_manager, parent=None):
+        """سازنده پنجره اصلی
         
-        # بارگذاری کتابخانه C
-        self.load_library()
+        Args:
+            current_user (User): کاربر فعلی
+            user_manager (UserManager): مدیر کاربر
+            parent (QWidget, optional): ویجت والد. پیش‌فرض None.
+        """
+        super().__init__(parent)
         
-        # تنظیم مشخصات پنجره
-        self.setWindowTitle("سیستم جامع مدیریت املاک")
-        self.setMinimumSize(1200, 800)
+        self.logger = logging.getLogger(__name__)
+        self.current_user = current_user
+        self.user_manager = user_manager
+        self.report_generator = ReportGenerator()
         
-        # تنظیم استایل کلی
-        self.set_style()
+        # تنظیم عنوان پنجره
+        self.setWindowTitle("سیستم مدیریت املاک")
         
-        # پیاده‌سازی رابط کاربری
+        # تنظیم اندازه پنجره
+        self.resize(1200, 800)
+        
+        # بارگیری تنظیمات
+        self.settings = QSettings("شرکت مدیریت املاک", "مدیریت املاک")
+        self.load_window_settings()
+        
+        # ایجاد رابط کاربری
         self.init_ui()
         
-    def load_library(self):
-        """بارگذاری کتابخانه C"""
-        try:
-            # تعیین مسیر فایل کتابخانه بر اساس سیستم عامل
-            if sys.platform.startswith('win'):
-                lib_path = os.path.abspath('property_lib.dll')
-            elif sys.platform.startswith('linux'):
-                lib_path = os.path.abspath('libproperty.so')
-            else:  # macOS
-                lib_path = os.path.abspath('libproperty.dylib')
-                
-            if os.path.exists(lib_path):
-                self.c_lib = ctypes.CDLL(lib_path)
-                
-                # تعریف انواع داده‌های بازگشتی توابع
-                self.c_lib.user_login.restype = ctypes.c_int
-                self.c_lib.user_register.restype = ctypes.c_int
-                
-                print(f"کتابخانه C با موفقیت بارگذاری شد: {lib_path}")
-            else:
-                print(f"هشدار: فایل کتابخانه '{lib_path}' یافت نشد. برنامه در حالت تست اجرا می‌شود.")
-                self.c_lib = None
-        except Exception as e:
-            print(f"خطا در بارگذاری کتابخانه C: {str(e)}")
-            self.c_lib = None
-            
-    def set_style(self):
-        """تنظیم استایل کلی برنامه"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f5f5f5;
-            }
-            QToolBar {
-                background-color: #2c3e50;
-                spacing: 10px;
-                padding: 5px;
-            }
-            QToolButton {
-                color: white;
-                background-color: transparent;
-                border: none;
-                padding: 8px;
-                border-radius: 4px;
-            }
-            QToolButton:hover {
-                background-color: #34495e;
-            }
-            QStatusBar {
-                background-color: #34495e;
-                color: white;
-            }
-            QLabel {
-                color: #2c3e50;
-            }
-            QStackedWidget {
-                background-color: #f5f5f5;
-            }
-        """)
+        # به‌روزرسانی نوار وضعیت
+        self.update_status_bar()
+        
+        self.logger.info("پنجره اصلی ایجاد شد")
     
     def init_ui(self):
-        """ایجاد رابط کاربری اصلی"""
+        """راه‌اندازی رابط کاربری"""
+        # ایجاد ویجت مرکزی
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
         
-        # ایجاد منوی برنامه
+        # ایجاد لایه عمودی
+        self.main_layout = QVBoxLayout(self.central_widget)
+        self.main_layout.setContentsMargins(5, 5, 5, 5)
+        
+        # ایجاد ویجت تب
+        self.tab_widget = QTabWidget()
+        self.main_layout.addWidget(self.tab_widget)
+        
+        # افزودن داشبورد
+        self.dashboard = Dashboard(self.current_user)
+        self.tab_widget.addTab(self.dashboard, "داشبورد")
+        
+        # افزودن تب‌های مدیریت املاک
+        self.residential_tab = ResidentialTab(self.current_user)
+        self.tab_widget.addTab(self.residential_tab, "املاک مسکونی")
+        
+        self.commercial_tab = CommercialTab(self.current_user)
+        self.tab_widget.addTab(self.commercial_tab, "املاک تجاری")
+        
+        self.land_tab = LandTab(self.current_user)
+        self.tab_widget.addTab(self.land_tab, "زمین")
+        
+        # افزودن تب جستجو
+        self.search_tab = SearchTab(self.current_user, self.report_generator)
+        self.tab_widget.addTab(self.search_tab, "جستجوی پیشرفته")
+        
+        # افزودن تب گزارش‌ها
+        self.report_tab = ReportTab(self.current_user, self.report_generator)
+        self.tab_widget.addTab(self.report_tab, "گزارش‌ها")
+        
+        # ایجاد منوها و نوار ابزار
         self.create_menus()
-        
-        # ایجاد نوار ابزار
         self.create_toolbar()
         
         # ایجاد نوار وضعیت
-        self.statusBar = QStatusBar()
-        self.setStatusBar(self.statusBar)
-        self.statusBar.showMessage("به سیستم مدیریت املاک خوش آمدید")
+        self.create_status_bar()
         
-        # ایجاد استک برای صفحات مختلف
-        self.stack = QStackedWidget()
-        self.setCentralWidget(self.stack)
-        
-        # ایجاد فرم‌های مختلف
-        self.welcome_page = self.create_welcome_page()
-        self.login_form = LoginForm(parent=self)
-        self.register_form = RegisterForm(parent=self)
-        self.property_form = PropertyForm(parent=self)
-        self.property_search_form = PropertySearchForm(parent=self)
-        
-        # اتصال سیگنال‌ها
-        self.login_form.login_succeeded.connect(self.on_login_success)
-        self.register_form.register_succeeded.connect(self.on_register_success)
-        self.register_form.back_button.clicked.connect(lambda: self.stack.setCurrentWidget(self.login_form))
-        
-        # افزودن فرم‌ها به استک
-        self.stack.addWidget(self.welcome_page)
-        self.stack.addWidget(self.login_form)
-        self.stack.addWidget(self.register_form)
-        self.stack.addWidget(self.property_form)
-        self.stack.addWidget(self.property_search_form)
-        
-        # نمایش صفحه خوشامدگویی
-        self.stack.setCurrentWidget(self.welcome_page)
+        # ایجاد نوار کناری
+        self.create_dock_widgets()
     
     def create_menus(self):
         """ایجاد منوهای برنامه"""
         # منوی فایل
-        self.file_menu = self.menuBar().addMenu("فایل")
+        file_menu = self.menuBar().addMenu("فایل")
         
-        login_action = QAction(QIcon("icons/login.png"), "ورود", self)
-        login_action.triggered.connect(self.show_login_form)
-        self.file_menu.addAction(login_action)
+        # اقدام تنظیمات
+        settings_action = QAction(QIcon("resources/icons/settings.png"), "تنظیمات", self)
+        settings_action.setShortcut("Ctrl+P")
+        settings_action.setStatusTip("تغییر تنظیمات برنامه")
+        settings_action.triggered.connect(self.show_settings_dialog)
+        file_menu.addAction(settings_action)
         
-        register_action = QAction(QIcon("icons/register.png"), "ثبت‌نام", self)
-        register_action.triggered.connect(self.show_register_form)
-        self.file_menu.addAction(register_action)
+        file_menu.addSeparator()
         
-        self.file_menu.addSeparator()
-        
-        exit_action = QAction(QIcon("icons/exit.png"), "خروج", self)
+        # اقدام خروج
+        exit_action = QAction(QIcon("resources/icons/exit.png"), "خروج", self)
+        exit_action.setShortcut("Ctrl+Q")
+        exit_action.setStatusTip("خروج از برنامه")
         exit_action.triggered.connect(self.close)
-        self.file_menu.addAction(exit_action)
-        
-        # منوی املاک
-        self.property_menu = self.menuBar().addMenu("املاک")
-        
-        add_property_action = QAction(QIcon("icons/add.png"), "ثبت ملک جدید", self)
-        add_property_action.triggered.connect(self.show_property_form)
-        self.property_menu.addAction(add_property_action)
-        
-        search_property_action = QAction(QIcon("icons/search.png"), "جستجوی ملک", self)
-        search_property_action.triggered.connect(self.show_property_search_form)
-        self.property_menu.addAction(search_property_action)
+        file_menu.addAction(exit_action)
         
         # منوی گزارش‌ها
-        self.reports_menu = self.menuBar().addMenu("گزارش‌ها")
+        report_menu = self.menuBar().addMenu("گزارش‌ها")
         
-        sales_report_action = QAction(QIcon("icons/report.png"), "گزارش فروش", self)
-        self.reports_menu.addAction(sales_report_action)
+        # اقدام گزارش تعداد املاک
+        property_count_action = QAction("گزارش تعداد املاک", self)
+        property_count_action.setStatusTip("ایجاد گزارش تعداد املاک")
+        property_count_action.triggered.connect(self.generate_property_count_report)
+        report_menu.addAction(property_count_action)
         
-        rentals_report_action = QAction(QIcon("icons/report.png"), "گزارش اجاره", self)
-        self.reports_menu.addAction(rentals_report_action)
+        # اقدام گزارش ارزش املاک
+        property_value_action = QAction("گزارش ارزش املاک", self)
+        property_value_action.setStatusTip("ایجاد گزارش ارزش املاک")
+        property_value_action.triggered.connect(self.generate_property_value_report)
+        report_menu.addAction(property_value_action)
+        
+        # اقدام گزارش منطقه‌ای
+        district_report_action = QAction("گزارش منطقه‌ای", self)
+        district_report_action.setStatusTip("ایجاد گزارش توزیع املاک بر اساس منطقه")
+        district_report_action.triggered.connect(self.generate_district_report)
+        report_menu.addAction(district_report_action)
+        
+        # منوی مدیریت
+        admin_menu = self.menuBar().addMenu("مدیریت")
+        
+        # اقدام مدیریت کاربران
+        user_management_action = QAction(QIcon("resources/icons/users.png"), "مدیریت کاربران", self)
+        user_management_action.setStatusTip("مدیریت کاربران سیستم")
+        user_management_action.triggered.connect(self.show_user_management_dialog)
+        
+        # فقط کاربران با دسترسی مدیر می‌توانند مدیریت کاربر را مشاهده کنند
+        if self.current_user.is_admin:
+            admin_menu.addAction(user_management_action)
         
         # منوی راهنما
-        self.help_menu = self.menuBar().addMenu("راهنما")
+        help_menu = self.menuBar().addMenu("راهنما")
         
-        about_action = QAction(QIcon("icons/about.png"), "درباره برنامه", self)
-        about_action.triggered.connect(self.show_about)
-        self.help_menu.addAction(about_action)
+        # اقدام راهنما
+        help_action = QAction(QIcon("resources/icons/help.png"), "راهنمای برنامه", self)
+        help_action.setShortcut("F1")
+        help_action.setStatusTip("نمایش راهنمای برنامه")
+        help_action.triggered.connect(self.show_help)
+        help_menu.addAction(help_action)
         
-        help_action = QAction(QIcon("icons/help.png"), "راهنمای برنامه", self)
-        self.help_menu.addAction(help_action)
+        # اقدام درباره
+        about_action = QAction(QIcon("resources/icons/about.png"), "درباره برنامه", self)
+        about_action.setStatusTip("نمایش اطلاعات درباره برنامه")
+        about_action.triggered.connect(self.show_about_dialog)
+        help_menu.addAction(about_action)
     
     def create_toolbar(self):
         """ایجاد نوار ابزار"""
         self.toolbar = QToolBar("نوار ابزار اصلی")
-        self.toolbar.setIconSize(QSize(32, 32))
-        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
-        self.addToolBar(self.toolbar)
+        self.toolbar.setIconSize(QSize(24, 24))
+        self.addToolBar(Qt.TopToolBarArea, self.toolbar)
         
-        # دکمه ورود
-        login_btn = QAction(QIcon("icons/login.png"), "ورود", self)
-        login_btn.triggered.connect(self.show_login_form)
-        self.toolbar.addAction(login_btn)
+        # اقدام افزودن ملک مسکونی
+        add_residential_action = QAction(QIcon("resources/icons/residential.png"), "افزودن ملک مسکونی", self)
+        add_residential_action.setStatusTip("ثبت ملک مسکونی جدید")
+        add_residential_action.triggered.connect(lambda: self.tab_widget.setCurrentWidget(self.residential_tab))
+        self.toolbar.addAction(add_residential_action)
         
-        # دکمه ثبت‌نام
-        register_btn = QAction(QIcon("icons/register.png"), "ثبت‌نام", self)
-        register_btn.triggered.connect(self.show_register_form)
-        self.toolbar.addAction(register_btn)
+        # اقدام افزودن ملک تجاری
+        add_commercial_action = QAction(QIcon("resources/icons/commercial.png"), "افزودن ملک تجاری", self)
+        add_commercial_action.setStatusTip("ثبت ملک تجاری جدید")
+        add_commercial_action.triggered.connect(lambda: self.tab_widget.setCurrentWidget(self.commercial_tab))
+        self.toolbar.addAction(add_commercial_action)
         
-        self.toolbar.addSeparator()
-        
-        # دکمه ثبت ملک
-        add_property_btn = QAction(QIcon("icons/add.png"), "ثبت ملک", self)
-        add_property_btn.triggered.connect(self.show_property_form)
-        self.toolbar.addAction(add_property_btn)
-        
-        # دکمه جستجوی ملک
-        search_property_btn = QAction(QIcon("icons/search.png"), "جستجوی ملک", self)
-        search_property_btn.triggered.connect(self.show_property_search_form)
-        self.toolbar.addAction(search_property_btn)
+        # اقدام افزودن زمین
+        add_land_action = QAction(QIcon("resources/icons/land.png"), "افزودن زمین", self)
+        add_land_action.setStatusTip("ثبت زمین جدید")
+        add_land_action.triggered.connect(lambda: self.tab_widget.setCurrentWidget(self.land_tab))
+        self.toolbar.addAction(add_land_action)
         
         self.toolbar.addSeparator()
         
-        # دکمه خروج
-        exit_btn = QAction(QIcon("icons/exit.png"), "خروج", self)
-        exit_btn.triggered.connect(self.close)
-        self.toolbar.addAction(exit_btn)
+        # اقدام جستجو
+        search_action = QAction(QIcon("resources/icons/search.png"), "جستجوی پیشرفته", self)
+        search_action.setStatusTip("جستجوی پیشرفته املاک")
+        search_action.triggered.connect(lambda: self.tab_widget.setCurrentWidget(self.search_tab))
+        self.toolbar.addAction(search_action)
+        
+        # اقدام گزارش‌ها
+        report_action = QAction(QIcon("resources/icons/report.png"), "گزارش‌ها", self)
+        report_action.setStatusTip("مدیریت گزارش‌ها")
+        report_action.triggered.connect(lambda: self.tab_widget.setCurrentWidget(self.report_tab))
+        self.toolbar.addAction(report_action)
     
-    def create_welcome_page(self):
-        """ایجاد صفحه خوشامدگویی"""
-        welcome_widget = QWidget()
-        layout = QVBoxLayout(welcome_widget)
+    def create_status_bar(self):
+        """ایجاد نوار وضعیت"""
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
         
-        # فریم مرکزی
-        center_frame = QFrame()
-        center_frame.setFrameShape(QFrame.StyledPanel)
-        center_frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-radius: 15px;
-                border: 1px solid #ddd;
-            }
-        """)
+        # اطلاعات کاربر
+        self.user_label = QLabel(f"کاربر: {self.current_user.full_name} ({self.current_user.username})")
+        self.status_bar.addPermanentWidget(self.user_label)
         
-        center_layout = QVBoxLayout(center_frame)
-        center_layout.setContentsMargins(40, 40, 40, 40)
-        center_layout.setSpacing(30)
+        # نوع دسترسی
+        access_level = "مدیر" if self.current_user.is_admin else "کاربر عادی"
+        self.access_label = QLabel(f"دسترسی: {access_level}")
+        self.status_bar.addPermanentWidget(self.access_label)
+    
+    def create_dock_widgets(self):
+        """ایجاد ویجت‌های نوار کناری"""
+        # ویجت فیلتر سریع
+        self.quick_filter_dock = QDockWidget("فیلتر سریع", self)
+        self.quick_filter_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
         
-        # لوگو
-        logo_label = QLabel()
-        logo_pixmap = QPixmap("icons/logo.png")
-        if not logo_pixmap.isNull():
-            logo_label.setPixmap(logo_pixmap.scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            logo_label.setAlignment(Qt.AlignCenter)
-        else:
-            # استفاده از متن به جای تصویر
-            logo_label.setText("سیستم مدیریت املاک")
-            logo_label.setStyleSheet("font-size: 36pt; font-weight: bold; color: #2c3e50;")
-            logo_label.setAlignment(Qt.AlignCenter)
+        filter_widget = QWidget()
+        filter_layout = QVBoxLayout(filter_widget)
         
-        center_layout.addWidget(logo_label)
+        # افزودن کنترل‌های فیلتر
+        filter_layout.addWidget(QLabel("نوع ملک:"))
+        property_type_combo = QComboBox()
+        property_type_combo.addItems(["همه", "مسکونی", "تجاری", "زمین"])
+        filter_layout.addWidget(property_type_combo)
         
-        # عنوان
-        title_label = QLabel("به سیستم جامع مدیریت املاک خوش آمدید")
-        title_label.setStyleSheet("font-size: 24pt; font-weight: bold; color: #2c3e50;")
-        title_label.setAlignment(Qt.AlignCenter)
-        center_layout.addWidget(title_label)
+        filter_layout.addWidget(QLabel("نوع معامله:"))
+        deal_type_combo = QComboBox()
+        deal_type_combo.addItems(["همه", "فروش", "اجاره"])
+        filter_layout.addWidget(deal_type_combo)
         
-        # توضیحات
-        description_label = QLabel(
-            "با استفاده از این سیستم می‌توانید به راحتی املاک خود را مدیریت کرده، "
-            "ملک جدید ثبت کنید و یا ملک مورد نظر خود را جستجو نمایید."
+        filter_layout.addWidget(QLabel("منطقه:"))
+        district_combo = QComboBox()
+        district_combo.addItems(["همه", "منطقه 1", "منطقه 2", "منطقه 3", "منطقه 4", "منطقه 5"])
+        filter_layout.addWidget(district_combo)
+        
+        filter_layout.addStretch()
+        
+        self.quick_filter_dock.setWidget(filter_widget)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.quick_filter_dock)
+    
+    def update_status_bar(self):
+        """به‌روزرسانی نوار وضعیت"""
+        self.status_bar.showMessage("آماده", 5000)
+    
+    def generate_property_count_report(self):
+        """تولید گزارش تعداد املاک"""
+        self.report_tab.report_type_combo.setCurrentIndex(0)  # تعداد املاک
+        self.tab_widget.setCurrentWidget(self.report_tab)
+        self.report_tab.generate_report()
+    
+    def generate_property_value_report(self):
+        """تولید گزارش ارزش املاک"""
+        self.report_tab.report_type_combo.setCurrentIndex(1)  # ارزش املاک
+        self.tab_widget.setCurrentWidget(self.report_tab)
+        self.report_tab.generate_report()
+    
+    def generate_district_report(self):
+        """تولید گزارش منطقه‌ای"""
+        self.report_tab.report_type_combo.setCurrentIndex(2)  # گزارش منطقه‌ای
+        self.tab_widget.setCurrentWidget(self.report_tab)
+        self.report_tab.generate_report()
+    
+    def show_settings_dialog(self):
+        """نمایش دیالوگ تنظیمات"""
+        dialog = SettingsDialog(self)
+        if dialog.exec_():
+            # اعمال تنظیمات جدید
+            self.logger.info("تنظیمات به‌روزرسانی شد")
+            # به‌روزرسانی رابط کاربری در صورت نیاز
+            self.update_ui()
+    
+    def show_user_management_dialog(self):
+        """نمایش دیالوگ مدیریت کاربران"""
+        if not self.current_user.is_admin:
+            QMessageBox.warning(self, "خطای دسترسی", "شما مجوز دسترسی به این بخش را ندارید.")
+            return
+        
+        dialog = UserManagementDialog(
+            current_user=self.current_user,
+            parent=self
         )
-        description_label.setStyleSheet("font-size: 14pt; color: #34495e;")
-        description_label.setAlignment(Qt.AlignCenter)
-        description_label.setWordWrap(True)
-        center_layout.addWidget(description_label)
+        dialog.exec_()
         
-        # دکمه‌ها
-        buttons_layout = QHBoxLayout()
-        buttons_layout.setSpacing(20)
-        
-        login_button = QPushButton("ورود به سیستم")
-        login_button.setStyleSheet("""
-            QPushButton {
-                background-color: #3498db;
-                color: white;
-                padding: 15px 30px;
-                font-size: 14pt;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
-        login_button.setMinimumWidth(200)
-        login_button.clicked.connect(self.show_login_form)
-        buttons_layout.addWidget(login_button)
-        
-        register_button = QPushButton("ثبت‌نام")
-        register_button.setStyleSheet("""
-            QPushButton {
-                background-color: #2ecc71;
-                color: white;
-                padding: 15px 30px;
-                font-size: 14pt;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #27ae60;
-            }
-        """)
-        register_button.setMinimumWidth(200)
-        register_button.clicked.connect(self.show_register_form)
-        buttons_layout.addWidget(register_button)
-        
-        center_layout.addLayout(buttons_layout)
-        
-        # قرار دادن فریم مرکزی در لایه اصلی
-        layout.addStretch(1)
-        layout.addWidget(center_frame)
-        layout.addStretch(1)
-        
-        return welcome_widget
+        # به‌روزرسانی نوار وضعیت در صورت تغییر اطلاعات کاربر
+        self.update_status_bar()
     
-    def show_login_form(self):
-        """نمایش فرم ورود"""
-        self.stack.setCurrentWidget(self.login_form)
-        self.statusBar.showMessage("لطفاً نام کاربری و رمز عبور خود را وارد کنید")
-    
-    def show_register_form(self):
-        """نمایش فرم ثبت‌نام"""
-        self.stack.setCurrentWidget(self.register_form)
-        self.statusBar.showMessage("لطفاً اطلاعات خود را برای ثبت‌نام وارد کنید")
-    
-    def show_property_form(self):
-        """نمایش فرم ثبت ملک جدید"""
-        # بررسی وضعیت ورود کاربر
-        if hasattr(self, 'current_user') and self.current_user:
-            self.stack.setCurrentWidget(self.property_form)
-            self.statusBar.showMessage("ثبت ملک جدید")
+    def show_help(self):
+        """نمایش راهنمای برنامه"""
+        help_file = os.path.join(os.path.dirname(__file__), "../property_management", "resources", "help", "index.html")
+        if os.path.exists(help_file):
+            # باز کردن راهنما در مرورگر
+            import webbrowser
+            webbrowser.open(help_file)
         else:
-            QMessageBox.warning(self, "خطا", "ابتدا وارد سیستم شوید")
-            self.show_login_form()
+            QMessageBox.information(self, "راهنمای برنامه", 
+                                   "راهنمای برنامه در حال حاضر در دسترس نیست.")
     
-    def show_property_search_form(self):
-        """نمایش فرم جستجوی ملک"""
-        # بررسی وضعیت ورود کاربر
-        if hasattr(self, 'current_user') and self.current_user:
-            self.stack.setCurrentWidget(self.property_search_form)
-            self.statusBar.showMessage("جستجوی ملک")
+    def show_about_dialog(self):
+        """نمایش دیالوگ درباره برنامه"""
+        dialog = AboutDialog(self)
+        dialog.exec_()
+    
+    def update_ui(self):
+        """به‌روزرسانی رابط کاربری بر اساس تنظیمات جدید"""
+        # به‌روزرسانی بخش‌های مختلف رابط کاربری
+        pass
+    
+    def load_window_settings(self):
+        """بارگیری تنظیمات پنجره از تنظیمات ذخیره شده"""
+        position = self.settings.value("mainwindow/position", QPoint(200, 200))
+        size = self.settings.value("mainwindow/size", QSize(1200, 800))
+        self.move(position)
+        self.resize(size)
+    
+    def save_window_settings(self):
+        """ذخیره تنظیمات پنجره"""
+        self.settings.setValue("mainwindow/position", self.pos())
+        self.settings.setValue("mainwindow/size", self.size())
+    
+    def closeEvent(self, event):
+        """رویداد بستن پنجره"""
+        reply = QMessageBox.question(self, "تایید خروج",
+                                     "آیا از خروج از برنامه اطمینان دارید؟",
+                                     QMessageBox.Yes | QMessageBox.No)
+        
+        if reply == QMessageBox.Yes:
+            # ذخیره تنظیمات پنجره
+            self.save_window_settings()
+            
+            # بستن اتصالات و آزادسازی منابع
+            self.logger.info("خروج از برنامه")
+            event.accept()
         else:
-            QMessageBox.warning(self, "خطا", "ابتدا وارد سیستم شوید")
-            self.show_login_form()
-    
-    def on_login_success(self, username):
-        """پس از ورود موفق"""
-        self.current_user = username
-        self.statusBar.showMessage(f"کاربر {username} وارد سیستم شد")
-        QMessageBox.information(self, "ورود موفق", f"کاربر گرامی {username}، خوش آمدید!")
-        
-        # نمایش صفحه اصلی پس از ورود
-        self.welcome_page = self.create_welcome_page()
-        self.stack.insertWidget(0, self.welcome_page)
-        self.stack.setCurrentWidget(self.welcome_page)
-    
-    def on_register_success(self, username):
-        """پس از ثبت‌نام موفق"""
-        self.show_login_form()
-    
-    def show_about(self):
-        """نمایش اطلاعات درباره برنامه"""
-        QMessageBox.about(self, "درباره برنامه", 
-            """<h1>سیستم جامع مدیریت املاک</h1>
-            <p>نسخه ۱.۰</p>
-            <p>این برنامه با هدف مدیریت اطلاعات املاک طراحی شده است.</p>
-            <p>امکانات این برنامه شامل:</p>
-            <ul>
-                <li>ثبت املاک مسکونی، تجاری و زمین</li>
-                <li>جستجوی پیشرفته املاک با معیارهای مختلف</li>
-                <li>مدیریت کاربران</li>
-                <li>تهیه گزارش‌های متنوع</li>
-            </ul>
-            """
-        )
-        
-if __name__ == "__main__":
-    from PyQt5.QtWidgets import QApplication
-    
-    app = QApplication(sys.argv)
-    
-    # تنظیم جهت راست به چپ برای رابط کاربری
-    app.setLayoutDirection(Qt.RightToLeft)
-    
-    # اطمینان از وجود پوشه آیکون‌ها
-    if not os.path.exists("icons"):
-        os.makedirs("icons")
-    
-    window = MainWindow()
-    window.show()
-    
-    sys.exit(app.exec_()) 
+            event.ignore() 

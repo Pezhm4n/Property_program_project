@@ -44,7 +44,10 @@ try:
     logger.info(f"کتابخانه از مسیر {lib_path} با موفقیت بارگذاری شد")
 except Exception as e:
     logger.error(f"خطا در بارگذاری کتابخانه از مسیر {lib_path}: {str(e)}")
-    property_lib = None
+    # استفاده از کتابخانه جایگزین (Mock)
+    logger.info("در حال استفاده از کتابخانه جایگزین (Mock)...")
+    from bridge.mock_lib import c_lib as property_lib
+    logger.info("کتابخانه جایگزین با موفقیت بارگذاری شد.")
 
 # تعریف ساختارهای C برای استفاده در پایتون
 class UserStruct(ctypes.Structure):

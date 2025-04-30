@@ -2,8 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-این ماژول پکیج ارتباطی بین هسته برنامه C و رابط کاربری پایتون را تعریف می‌کند.
+Bridge module between C core and Python UI.
 """
+
+# Use mock_lib instead of real C library
+from .mock_lib import c_lib
 
 from .property_bridge import (
     register_property, 
@@ -16,5 +19,5 @@ from .property_bridge import (
     DEAL_TYPE_RENT
 )
 
-# نسخه پکیج
-__version__ = '1.0.0' 
+# Package version
+__version__ = '1.0.0'

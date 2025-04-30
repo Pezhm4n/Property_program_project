@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                            QLabel, QLineEdit, QPushButton, QMessageBox, 
                            QComboBox, QDateEdit)
 from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtGui import QFont, QIcon, QRegExpValidator
+from PyQt5.QtGui import QFont, QRegExpValidator
 from PyQt5.QtCore import QRegExp
 
 # واردات رابط میانی برای ارتباط با هسته سیستم

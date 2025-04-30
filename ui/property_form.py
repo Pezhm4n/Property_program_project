@@ -8,13 +8,13 @@
 
 import sys
 import os
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
-                             QLabel, QLineEdit, QPushButton, QComboBox, 
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+                             QLineEdit, QPushButton, QComboBox,
                              QSpinBox, QDoubleSpinBox, QCheckBox, QTabWidget,
-                             QMessageBox, QFormLayout, QGridLayout, QGroupBox,
+                             QMessageBox, QFormLayout, QGroupBox,
                              QRadioButton, QButtonGroup)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QIcon, QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
 
 # واردات کتابخانه‌های لازم برای ارتباط با هسته سیستم
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

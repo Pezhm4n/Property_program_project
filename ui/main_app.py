@@ -8,12 +8,12 @@
 
 import sys
 import os
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QTabWidget, QWidget, 
-                            QPushButton, QVBoxLayout, QHBoxLayout, QLabel, 
-                            QStackedWidget, QMessageBox, QAction, QToolBar,
-                            QStatusBar, QFrame, QSplitter, QTreeWidget, QTreeWidgetItem)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget,
+                             QPushButton, QVBoxLayout, QHBoxLayout, QLabel,
+                             QStackedWidget, QMessageBox, QAction, QToolBar,
+                             QStatusBar, QFrame, QSplitter, QTreeWidget, QTreeWidgetItem)
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QIcon, QPixmap
+from PyQt5.QtGui import QFont, QIcon
 
 # واردات فرم‌های مورد نیاز
 from property_form import PropertyForm
@@ -23,7 +23,6 @@ from user_profile import UserProfile
 
 # واردات رابط میانی برای ارتباط با هسته سیستم
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from bridge import user_bridge
 
 
 class MainWindow(QMainWindow):

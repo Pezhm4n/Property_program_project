@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
                            QLabel, QLineEdit, QPushButton, QMessageBox, 
                            QCheckBox)
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont
 
 # واردات رابط میانی برای ارتباط با هسته سیستم
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

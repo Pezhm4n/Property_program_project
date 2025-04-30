@@ -82,12 +82,13 @@ CommercialProperty* commercial_find_by_area(float minArea, float maxArea, Proper
 /**
  * @brief استخراج و جستجوی املاک تجاری بر اساس تعداد اتاق‌های اداری
  * 
- * @param rooms تعداد اتاق‌های مورد نظر (0 برای همه)
+ * @param minRooms حداقل تعداد اتاق‌ها (0 برای بدون محدودیت)
+ * @param maxRooms حداکثر تعداد اتاق‌ها (0 برای بدون محدودیت)
  * @param dealType نوع معامله (فروش/اجاره)
  * @param count خروجی: تعداد املاک یافت شده
  * @return CommercialProperty* آرایه‌ای از املاک تجاری یافت شده (باید با commercial_free_array آزاد شود)
  */
-CommercialProperty* commercial_find_by_rooms(int rooms, PropertyDealType dealType, int* count);
+CommercialProperty* commercial_find_by_rooms(int minRooms, int maxRooms, PropertyDealType dealType, int* count);
 
 /**
  * @brief استخراج و جستجوی املاک تجاری بر اساس محدوده قیمت
