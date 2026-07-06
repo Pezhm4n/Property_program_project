@@ -72,6 +72,30 @@ RE_API int re_logout(const char* request_json, char** response_json_out);
 RE_API int re_create_property(const char* request_json, char** response_json_out);
 
 /**
+ * @brief Update an existing property.
+ * @param request_json JSON containing property ID, updated details, and session token.
+ * @param response_json_out Empty output JSON on success.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_update_property(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Get all properties (supports pagination/filtering in request).
+ * @param request_json JSON containing filters and session token.
+ * @param response_json_out Output JSON array of property objects.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_get_properties(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Get a single property by ID.
+ * @param request_json JSON containing property ID and session token.
+ * @param response_json_out Output JSON containing property details.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_get_property(const char* request_json, char** response_json_out);
+
+/**
  * @brief Archive an existing property.
  * @param request_json JSON containing property ID and session token.
  * @param response_json_out Empty output JSON on success.
@@ -80,12 +104,52 @@ RE_API int re_create_property(const char* request_json, char** response_json_out
 RE_API int re_archive_property(const char* request_json, char** response_json_out);
 
 /**
+ * @brief Restore an archived property.
+ * @param request_json JSON containing property ID and session token.
+ * @param response_json_out Empty output JSON on success.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_restore_property(const char* request_json, char** response_json_out);
+
+/**
  * @brief Get property reports.
  * @param request_json JSON containing filters and session token.
  * @param response_json_out Output JSON containing aggregate report.
  * @return 0 on success, negative RE_ERR_* on failure.
  */
 RE_API int re_get_report(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Get general system statistics.
+ * @param request_json JSON containing session token.
+ * @param response_json_out Output JSON containing stats.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_get_statistics(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Get dashboard specific overview data.
+ * @param request_json JSON containing session token.
+ * @param response_json_out Output JSON containing dashboard layout.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_get_dashboard(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Validate a user session token.
+ * @param request_json JSON containing token.
+ * @param response_json_out Empty output JSON on success.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_validate_session(const char* request_json, char** response_json_out);
+
+/**
+ * @brief Healthcheck ping to DLL.
+ * @param request_json Empty JSON or None.
+ * @param response_json_out {"status":"ok"}
+ * @return 0 on success.
+ */
+RE_API int re_ping(const char* request_json, char** response_json_out);
 
 #ifdef __cplusplus
 }

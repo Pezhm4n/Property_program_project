@@ -22,6 +22,7 @@ class BusyError(REException): pass
 class CorruptError(REException): pass
 class MemoryError(REException): pass
 class InternalError(REException): pass
+class NotImplementedError(REException): pass
 
 def check_error(code: int, details: str = "") -> None:
     if code == 0:
@@ -46,5 +47,7 @@ def check_error(code: int, details: str = "") -> None:
         raise CorruptError("Database is corrupt.", code, details)
     elif code == -98:
         raise MemoryError("Out of memory in DLL.", code, details)
+    elif code == -100:
+        raise NotImplementedError("This API endpoint is not yet implemented in the core DLL.", code, details)
     else:
         raise InternalError("Internal error occurred.", code, details)
