@@ -52,6 +52,14 @@ else()
     message(WARNING "sqlite3.c not found in third_party/sqlite3/. Pinned amalgamation required for successful build.")
 endif()
 
+# Third-party cJSON Integration
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cjson/cJSON.c")
+    target_sources(re_core PRIVATE third_party/cjson/cJSON.c)
+    target_include_directories(re_core PRIVATE third_party/cjson)
+else()
+    message(WARNING "cJSON.c not found in third_party/cjson/. Pinned cJSON required for successful build.")
+endif()
+
 # Optional: Enable testing
 enable_testing()
 # Test executables will be added here
