@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added (Phase 6.4 - Dashboard & Reporting UI)
+- Fully functional `DashboardPage` and `ReportsPage` connected statelessly to Bridge.
+- StatisticsCard, RecentActivity, and QPainter-based Chart skeleton widgets.
+- EmptyStateWidget to display clean placeholder messages for empty table views.
+- Serializing and restoring capability (`from_dict` / `to_dict`) on `SearchState`.
+
+### Added (Phase 6.3 - Search, Filtering & Sorting)
+- `SearchState` DTO representing Query, Filters, Sorting, and Pagination.
+- Stateless Search Toolbar and Advanced Filter Dialog.
+- Server-side sorting triggers via `QTableView` header clicks.
+
+### Added (Phase 6.2 - Property Management UI)
+- API Freeze in C core defining complete v1.0 bindings with `RE_ERR_NOT_IMPLEMENTED`.
+- `PropertyTableModel` leveraging Qt Model/View paradigm.
+- Property CRUD Interface connecting Python `PropertyDTO` to Bridge (without direct UI validation).
+- Interface-driven `SessionManager` storage abstractions.
+
+### Added (Phase 6.1 - Authentication UI)
+- Fully functional Login UI connected via Bridge to `AuthService`.
+- Checkboxes for Remember Me (JSON Storage) and Show/Hide Password.
+### Added (Phase 5 - UI Foundation)
+- PySide6 Application bootstrap with dynamic QSS theming (Light/Dark).
+- Standardized MessageBox for translating Bridge Exceptions cleanly to the user.
+- Base UI managers for Font, Navigation, and Themes.
+
 ### Added (Phase 4 - Python Bridge)
 - `ctypes` bindings establishing Python to C integration.
 - `loader.py` implementing robust memory deallocation (`re_free_string`) via try-finally blocks.

@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core.theme_manager import ThemeManager
 from core.font_manager import FontManager
 from core.navigation import NavigationManager
+from core.resource_manager import ResourceManager
 
 def main():
     # High DPI Scaling Policy
@@ -16,6 +17,7 @@ def main():
     
     app = QApplication(sys.argv)
     app.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+    app.setWindowIcon(ResourceManager.get_app_icon())
     
     # Initialize Fonts
     font = FontManager.setup_fonts()
