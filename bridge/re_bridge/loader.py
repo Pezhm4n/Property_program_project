@@ -49,10 +49,17 @@ def load_dll() -> ctypes.CDLL:
         func.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
         func.restype = ctypes.c_int
 
-    # Enforce Version Checking
-    api_version = dll.re_get_api_version()
+    # Enforce Version Checking safely
+    try:
+        api_version = dll.re_get_api_version()
+    except Exception as e:
+        raise InternalError("Could not retrieve API version from DLL.", -99, str(e))
+        
     if api_version != EXPECTED_API_VERSION:
-        raise InternalError(f"DLL API Version mismatch. Expected {EXPECTED_API_VERSION}, got {api_version}.")
+        raise InternalError(
+            f"The core DLL version ({api_version}) is incompatible with this Python Application ({EXPECTED_API_VERSION}). "
+            f"Please update your software or rebuild the core project."
+        )
 
     return dll
 

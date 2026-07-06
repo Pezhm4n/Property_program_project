@@ -1,0 +1,28 @@
+/* base.qss */
+* {
+    font-family: "Segoe UI";
+    font-size: 14px;
+}
+
+QMainWindow {
+    background-color: #f5f5f5;
+}
+
+QLineEdit {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+QPushButton {
+    padding: 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+QLabel#titleLabel {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
