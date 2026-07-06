@@ -50,6 +50,12 @@ def load_dll() -> ctypes.CDLL:
     
     dll.re_free_string.argtypes = [ctypes.c_void_p]
     dll.re_free_string.restype = None
+
+    dll.re_initialize.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    dll.re_initialize.restype = ctypes.c_int
+
+    dll.re_shutdown.argtypes = []
+    dll.re_shutdown.restype = None
     
     # Core Data & Auth Endpoints
     endpoints = [

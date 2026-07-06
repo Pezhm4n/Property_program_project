@@ -27,11 +27,18 @@ def main():
     theme_manager = ThemeManager()
     theme_manager.apply_theme(app, "dark")
     
+    # Initialize Core DLL Database and Migrations
+    from re_bridge.services import re_init, re_close
+    re_init("real_estate.db", "core/migrations")
+    
     # Initialize Navigation and launch
     nav = NavigationManager()
     nav.show_login()
     
-    sys.exit(app.exec())
+    try:
+        sys.exit(app.exec())
+    finally:
+        re_close()
 
 if __name__ == "__main__":
     main()

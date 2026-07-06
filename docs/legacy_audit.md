@@ -15,20 +15,20 @@
 | `src/residential.c` / `include/residential.h` | C | منطق و داده‌های املاک مسکونی | **MIGRATE** | 92% | **BR-001** (حق کمیسیون) | **VR-002** (مبالغ مثبت) | **ALG-001** (محاسبه کمیسیون) | انتقال فرمول‌های محاسباتی به لایه محاسبات (Core Logic) در C. |
 | `src/commercial.c` / `include/commercial.h` | C | منطق و داده‌های املاک تجاری | **MIGRATE** | 92% | **BR-001** (حق کمیسیون) | **VR-003** (متراژ تجاری) | **ALG-002** (محاسبه مالیات) | انتقال حق‌الزحمه‌های تجاری به کدهای مالی لایه C. |
 | `src/land.c` / `include/land.h` | C | منطق و داده‌های اراضی و زمین | **MIGRATE** | 92% | **BR-002** (مساحت زمین) | **VR-004** (متراژ معتبر) | - | فرمول‌های سنجش نوع کاربری زمین به قوانین بیزینس C منتقل شوند. |
-| `src/data_manager.c` / `include/data_manager.h` | C | خواندن و نوشتن فایل‌های متنی داده | **DELETE** | 95% | - | - | **ALG-005** (سریالایز فایل) | دیتابیس جدید کاملاً مبتنی بر SQLite است؛ این فایل کارایی ندارد. |
-| `src/report.c` / `include/report.h` | C | تولید گزارش‌های متنی خام | **DELETE** | 95% | - | - | **ALG-004** (قالب گزارش متنی) | گزارش‌ها اکنون به صورت JSON در خروجی Bridge تولید و در UI رندر می‌شوند. |
+| `src/data_manager.c` / `include/data_manager.h` | C | خواندن و نوشتن فایل‌های متنی داده | **Eligible for Removal after Phase 9 QA** | 95% | - | - | **ALG-005** (سریالایز فایل) | دیتابیس جدید کاملاً مبتنی بر SQLite است؛ این فایل کارایی ندارد. |
+| `src/report.c` / `include/report.h` | C | تولید گزارش‌های متنی خام | **Eligible for Removal after Phase 9 QA** | 95% | - | - | **ALG-004** (قالب گزارش متنی) | گزارش‌ها اکنون به صورت JSON در خروجی Bridge تولید و در UI رندر می‌شوند. |
 | `src/utils.c` / `include/utils.h` | C | توابع کمکی تاریخ و رشته | **REVIEW AGAIN** | 85% | - | **VR-005** (فرمت تلفن) | **ALG-003** (تبدیل تاریخ جلالی) | به دلیل ضریب اطمینان زیر ۹۰٪ مجدداً برای تفکیک توابع جلالی بررسی می‌شود. |
-| `property_management/advanced_search.py` | Python | جستجوی پیشرفته GUI قدیمی | **DELETE** | 95% | - | - | **ALG-006** (فیلترینگ کلاینت) | در فاز ۶.۳ بازنویسی شد. |
-| `property_management/search_engine.py` | Python | موتور جستجوی محلی قدیمی | **DELETE** | 95% | - | - | **ALG-006** (فیلتر کوئری) | در فاز ۶.۳ به Bridge منتقل شد. |
-| `property_management/filter_models.py` | Python | مدل‌های فیلتر پایتون | **DELETE** | 95% | - | - | - | در قالب SearchState بازنویسی شد. |
-| `property_management/charts.py` | Python | رسم چارت با matplotlib | **DELETE** | 95% | - | - | - | در فاز ۶.۴ با QPainter کاملاً بازنویسی شد. |
-| `property_management/report_generator.py` | Python | خروجی‌گیر گزارشات | **DELETE** | 95% | - | - | - | گزارش‌گیری در لایه C متمرکز خواهد شد. |
-| `property_management/app.py` / `main.py` | Python | هسته قدیمی PySide6 | **DELETE** | 95% | - | - | - | لایه جدید UI در پوشه app جایگزین شده است. |
-| `bridge/commercial_bridge.py` | Python | واسط قدیمی بخش تجاری | **DELETE** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
-| `bridge/land_bridge.py` | Python | واسط قدیمی بخش زمین | **DELETE** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
-| `bridge/residential_bridge.py` | Python | واسط قدیمی بخش مسکونی | **DELETE** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
-| `bridge/lib_handler.py` | Python | لودر قدیمی DLL | **DELETE** | 95% | - | - | - | با لودر جدید منعطف پایتون جایگزین شده است. |
-| `examples/user_example.c` | C | نمونه اجرای توابع کاربر | **DELETE** | 95% | - | - | - | در پوشه tests پوشش داده شده است. |
+| `property_management/advanced_search.py` | Python | جستجوی پیشرفته GUI قدیمی | **Eligible for Removal after Phase 9 QA** | 95% | - | - | **ALG-006** (فیلترینگ کلاینت) | در فاز ۶.۳ بازنویسی شد. |
+| `property_management/search_engine.py` | Python | موتور جستجوی محلی قدیمی | **Eligible for Removal after Phase 9 QA** | 95% | - | - | **ALG-006** (فیلتر کوئری) | در فاز ۶.۳ به Bridge منتقل شد. |
+| `property_management/filter_models.py` | Python | مدل‌های فیلتر پایتون | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | در قالب SearchState بازنویسی شد. |
+| `property_management/charts.py` | Python | رسم چارت با matplotlib | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | در فاز ۶.۴ با QPainter کاملاً بازنویسی شد. |
+| `property_management/report_generator.py` | Python | خروجی‌گیر گزارشات | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | گزارش‌گیری در لایه C متمرکز خواهد شد. |
+| `property_management/app.py` / `main.py` | Python | هسته قدیمی PySide6 | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | لایه جدید UI در پوشه app جایگزین شده است. |
+| `bridge/commercial_bridge.py` | Python | واسط قدیمی بخش تجاری | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
+| `bridge/land_bridge.py` | Python | واسط قدیمی بخش زمین | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
+| `bridge/residential_bridge.py` | Python | واسط قدیمی بخش مسکونی | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | لایه جدید `re_bridge` کاملاً بر پایه JSON است. |
+| `bridge/lib_handler.py` | Python | لودر قدیمی DLL | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | با لودر جدید منعطف پایتون جایگزین شده است. |
+| `examples/user_example.c` | C | نمونه اجرای توابع کاربر | **Eligible for Removal after Phase 9 QA** | 95% | - | - | - | در پوشه tests پوشش داده شده است. |
 
 ---
 
@@ -58,7 +58,7 @@
 - **کل فایل‌های ممیزی شده:** ۳۲ فایل
 - **تعداد نگهداری (KEEP):** ۰ فایل
 - **تعداد انتقال (MIGRATE):** ۴ فایل (`residential.c`, `commercial.c`, `land.c`, `user.c`)
-- **تعداد حذف (DELETE):** ۲۷ فایل
+- **تعداد آماده حذف (Eligible for Removal after Phase 9 QA):** ۲۷ فایل
 - **تعداد بازبینی مجدد (REVIEW AGAIN):** ۱ فایل (`src/utils.c` به جهت داشتن ضریب اطمینان ۸۵٪)
 
 ---

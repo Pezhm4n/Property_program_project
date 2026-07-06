@@ -36,6 +36,19 @@ RE_API int re_get_api_version();
 RE_API int re_get_dll_version();
 
 /**
+ * @brief Initialize the SQLite database connection and run migrations.
+ * @param db_path Path to the SQLite database file.
+ * @param migrations_path Path to the folder containing SQL migration files.
+ * @return 0 on success, negative RE_ERR_* on failure.
+ */
+RE_API int re_initialize(const char* db_path, const char* migrations_path);
+
+/**
+ * @brief Shutdown the SQLite database connection safely.
+ */
+RE_API void re_shutdown();
+
+/**
  * @brief Get the last error code encountered by the DLL in the current thread.
  * @return Project error code.
  */

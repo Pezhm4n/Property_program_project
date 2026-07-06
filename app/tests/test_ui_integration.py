@@ -4,38 +4,51 @@ import os
 import sqlite3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
-from re_bridge.services import PropertyService, DashboardService, BackupService, calculate_financials
+from re_bridge.services import PropertyService, DashboardService, BackupService, re_init, re_close
 from re_bridge.models import PropertyDTO, SearchState
 
+@pytest.fixture(autouse=True)
+def setup_test_db():
+    re_init("real_estate_test.db", "core/migrations")
+    yield
+    re_close()
+    if os.path.exists("real_estate_test.db"):
+        try:
+            os.remove("real_estate_test.db")
+        except Exception:
+            pass
+
 def test_commission_and_tax_calculation():
+    token = "test_token"
+    
     # 1. Residential Sale (BR-001: 0.25% + 9% VAT)
     p1 = PropertyDTO(
-        id=1, is_archived=False, category="مسکونی", listing_type="فروش",
-        city="Tehran", municipal_district=1, address="T1", owner_phone="0912",
+        id=0, is_archived=False, category="مسکونی", listing_type="فروش",
+        city="Tehran", municipal_district=1, address="T1", owner_phone="09123456789",
         area_sqm=100, sale_price=1000000, rent_deposit=0, rent_monthly=0, date_registered="1405/01/01"
     )
-    fin1 = calculate_financials(p1)
-    assert fin1["commission"] == 2500  # 1,000,000 * 0.0025
-    assert fin1["tax"] == 225         # 2500 * 0.09
+    PropertyService.create_property(token, p1)
     
     # 2. Commercial Sale (BR-001: 0.5% + 9% VAT)
     p2 = PropertyDTO(
-        id=2, is_archived=False, category="تجاری", listing_type="فروش",
-        city="Tehran", municipal_district=2, address="T2", owner_phone="0912",
+        id=0, is_archived=False, category="تجاری", listing_type="فروش",
+        city="Tehran", municipal_district=2, address="T2", owner_phone="09123456789",
         area_sqm=80, sale_price=1000000, rent_deposit=0, rent_monthly=0, date_registered="1405/01/01"
     )
-    fin2 = calculate_financials(p2)
-    assert fin2["commission"] == 5000  # 1,000,000 * 0.005
-    assert fin2["tax"] == 450         # 5000 * 0.09
+    PropertyService.create_property(token, p2)
+    
+    data = DashboardService.get_dashboard_data(token)
+    financials = data["charts"]["financials"]
+    assert financials["commission"] == 7500
+    assert financials["tax"] == 675
 
 def test_backup_and_restore():
     token = "test_token"
     backup_file = "test_backup.db"
     
-    # Create some dummy property first to ensure database is not empty
     p = PropertyDTO(
         id=0, is_archived=False, category="مسکونی", listing_type="فروش",
-        city="Tehran", municipal_district=1, address="Address", owner_phone="0912",
+        city="Tehran", municipal_district=1, address="Address", owner_phone="09123456789",
         area_sqm=100, sale_price=1000, rent_deposit=0, rent_monthly=0, date_registered="1405/01/01"
     )
     res = PropertyService.create_property(token, p)
@@ -46,12 +59,16 @@ def test_backup_and_restore():
     assert os.path.exists(backup_file)
     
     # Delete original db to prove restore works
-    if os.path.exists("real_estate.db"):
-        os.remove("real_estate.db")
+    re_close()
+    if os.path.exists("real_estate_test.db"):
+        try:
+            os.remove("real_estate_test.db")
+        except Exception:
+            pass
         
     # Restore
     BackupService.restore_backup(token, backup_file)
-    assert os.path.exists("real_estate.db")
+    assert os.path.exists("real_estate_test.db")
     
     # Clean up backup file
     if os.path.exists(backup_file):
@@ -59,10 +76,9 @@ def test_backup_and_restore():
 
 def test_dashboard_real_data():
     token = "test_token"
-    # Ensure there is data
     p = PropertyDTO(
         id=0, is_archived=False, category="مسکونی", listing_type="فروش",
-        city="Tehran", municipal_district=1, address="Address", owner_phone="0912",
+        city="Tehran", municipal_district=1, address="Address", owner_phone="09123456789",
         area_sqm=100, sale_price=1000, rent_deposit=0, rent_monthly=0, date_registered="1405/01/01"
     )
     PropertyService.create_property(token, p)
