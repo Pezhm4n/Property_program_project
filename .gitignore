@@ -1,0 +1,8 @@
+
+ui/__pycache__/
+
+.idea/
+
+logs/
+
+__pycache__/

@@ -536,4 +536,32 @@ class ReportTab(QWidget):
         self.report_type_combo.setCurrentIndex(0)
         self.deal_type_combo.setCurrentIndex(0)
         self.output_format_combo.setCurrentIndex(0)
-        self.chart_type_combo.setCurrentIndex(0) 
+        self.chart_type_combo.setCurrentIndex(0)
+    
+    def generate_property_count_report(self):
+        """تولید گزارش تعداد املاک به طور مستقیم"""
+        # تنظیم کمبو باکس نوع گزارش به 'تعداد املاک'
+        self.report_type_combo.setCurrentIndex(0)
+        # فراخوانی متد تولید گزارش
+        self.generate_report()
+        
+    def generate_property_value_report(self):
+        """تولید گزارش ارزش املاک به طور مستقیم"""
+        # تنظیم کمبو باکس نوع گزارش به 'ارزش املاک'
+        self.report_type_combo.setCurrentIndex(1)
+        # فراخوانی متد تولید گزارش
+        self.generate_report()
+        
+    def generate_district_report(self):
+        """تولید گزارش منطقه‌ای به طور مستقیم"""
+        # تنظیم کمبو باکس نوع گزارش به 'گزارش منطقه‌ای'
+        self.report_type_combo.setCurrentIndex(2)
+        # فراخوانی متد تولید گزارش
+        self.generate_report()
+        
+    def generate_price_range_report(self):
+        """تولید گزارش محدوده قیمت به طور مستقیم"""
+        # تنظیم کمبو باکس نوع گزارش به 'گزارش محدوده قیمت'
+        self.report_type_combo.setCurrentIndex(3)
+        # فراخوانی متد تولید گزارش
+        self.generate_report() 

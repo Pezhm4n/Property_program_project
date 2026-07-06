@@ -141,20 +141,26 @@ class MainWindow(QMainWindow):
         # اقدام گزارش تعداد املاک
         property_count_action = QAction("گزارش تعداد املاک", self)
         property_count_action.setStatusTip("ایجاد گزارش تعداد املاک")
-        property_count_action.triggered.connect(self.generate_property_count_report)
+        property_count_action.triggered.connect(lambda: self.report_tab.generate_property_count_report())
         report_menu.addAction(property_count_action)
         
         # اقدام گزارش ارزش املاک
         property_value_action = QAction("گزارش ارزش املاک", self)
         property_value_action.setStatusTip("ایجاد گزارش ارزش املاک")
-        property_value_action.triggered.connect(self.generate_property_value_report)
+        property_value_action.triggered.connect(lambda: self.report_tab.generate_property_value_report())
         report_menu.addAction(property_value_action)
         
         # اقدام گزارش منطقه‌ای
         district_report_action = QAction("گزارش منطقه‌ای", self)
         district_report_action.setStatusTip("ایجاد گزارش توزیع املاک بر اساس منطقه")
-        district_report_action.triggered.connect(self.generate_district_report)
+        district_report_action.triggered.connect(lambda: self.report_tab.generate_district_report())
         report_menu.addAction(district_report_action)
+        
+        # اقدام گزارش محدوده قیمت
+        price_range_action = QAction("گزارش محدوده قیمت", self)
+        price_range_action.setStatusTip("ایجاد گزارش توزیع املاک بر اساس محدوده قیمت")
+        price_range_action.triggered.connect(lambda: self.report_tab.generate_price_range_report())
+        report_menu.addAction(price_range_action)
         
         # منوی مدیریت
         admin_menu = self.menuBar().addMenu("مدیریت")
@@ -271,22 +277,19 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("آماده", 5000)
     
     def generate_property_count_report(self):
-        """تولید گزارش تعداد املاک"""
-        self.report_tab.report_type_combo.setCurrentIndex(0)  # تعداد املاک
+        """تولید گزارش تعداد املاک - تغییر یافته برای سازگاری با کد قدیمی"""
         self.tab_widget.setCurrentWidget(self.report_tab)
-        self.report_tab.generate_report()
+        self.report_tab.generate_property_count_report()
     
     def generate_property_value_report(self):
-        """تولید گزارش ارزش املاک"""
-        self.report_tab.report_type_combo.setCurrentIndex(1)  # ارزش املاک
+        """تولید گزارش ارزش املاک - تغییر یافته برای سازگاری با کد قدیمی"""
         self.tab_widget.setCurrentWidget(self.report_tab)
-        self.report_tab.generate_report()
+        self.report_tab.generate_property_value_report()
     
     def generate_district_report(self):
-        """تولید گزارش منطقه‌ای"""
-        self.report_tab.report_type_combo.setCurrentIndex(2)  # گزارش منطقه‌ای
+        """تولید گزارش منطقه‌ای - تغییر یافته برای سازگاری با کد قدیمی"""
         self.tab_widget.setCurrentWidget(self.report_tab)
-        self.report_tab.generate_report()
+        self.report_tab.generate_district_report()
     
     def show_settings_dialog(self):
         """نمایش دیالوگ تنظیمات"""

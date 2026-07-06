@@ -2,34 +2,30 @@
 # -*- coding: utf-8 -*-
 
 """
-این ماژول شامل کلاس Dashboard است که داشبورد اصلی برنامه را مدیریت می‌کند.
-این داشبورد اطلاعات آماری و خلاصه‌ای از وضعیت سیستم را نمایش می‌دهد.
+ماژول داشبورد اصلی برنامه
+
+این ماژول شامل کلاس Dashboard برای نمایش اطلاعات آماری و خلاصه‌ای از سیستم مدیریت املاک است.
 """
 
 import os
 import logging
 from datetime import datetime, timedelta
+from typing import Dict, Tuple, Optional, List, Any
 
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QLabel, QPushButton, QComboBox, QGroupBox,
-    QMessageBox, QScrollArea, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton, 
+    QComboBox, QGroupBox, QFrame, QScrollArea, QMessageBox, QSizePolicy
 )
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, pyqtSignal, QSize, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QSize, QDate
+from PyQt5.QtGui import QFont, QIcon
 
-# تغییر مسیرهای واردسازی
+from property_management.report_generator import ReportGenerator
 from bridge.residential_bridge import ResidentialBridge
 from bridge.commercial_bridge import CommercialBridge
 from bridge.land_bridge import LandBridge
-from property_management.report_generator import ReportGenerator
-from property_management.config import config_manager, ConfigSection
-from ui.dashboard_tab import (
-    StatCard, PropertyCountChart,
-    DistrictDistributionChart, PriceRangeChart
-)
+from ui.dashboard_tab import StatCard, PropertyCountChart, DistrictDistributionChart, PriceRangeChart
 
-# تنظیم لاگر
+# تنظیمات لاگینگ
 logger = logging.getLogger(__name__)
 
 class Dashboard(QWidget):
@@ -48,94 +44,60 @@ class Dashboard(QWidget):
     navigate_to_reports = pyqtSignal()
     
     def __init__(self, username: str, parent=None):
-        """
-        مقداردهی اولیه داشبورد
-        
-        پارامترها:
-            username: نام کاربری کاربر فعلی
-            parent: ویجت والد
-        """
+        """مقداردهی اولیه داشبورد"""
         super().__init__(parent)
+        
         self.username = username
+        self.logger = logging.getLogger(__name__)
         
+        # برایج‌های دسترسی به داده
         try:
-            # ایجاد اتصال‌های پل (bridge) با مدیریت خطا
-            try:
-                self.report_generator = ReportGenerator()
-            except Exception as e:
-                logger.error(f"خطا در ایجاد ReportGenerator: {e}")
-                self.report_generator = None
-            
-            try:
-                self.residential_bridge = ResidentialBridge()
-            except Exception as e:
-                logger.error(f"خطا در ایجاد ResidentialBridge: {e}")
-                self.residential_bridge = None
-            
-            try:
-                self.commercial_bridge = CommercialBridge()
-            except Exception as e:
-                logger.error(f"خطا در ایجاد CommercialBridge: {e}")
-                self.commercial_bridge = None
-            
-            try:
-                self.land_bridge = LandBridge()
-            except Exception as e:
-                logger.error(f"خطا در ایجاد LandBridge: {e}")
-                self.land_bridge = None
-        
-            # تنظیم دوره‌های زمانی
-            self.time_periods = {
-                "امروز": (datetime.now().replace(hour=0, minute=0, second=0), datetime.now()),
-                "هفته جاری": (datetime.now() - timedelta(days=datetime.now().weekday()), datetime.now()),
-                "ماه جاری": (datetime.now().replace(day=1), datetime.now()),
-                "سه ماه اخیر": (datetime.now() - timedelta(days=90), datetime.now()),
-                "سال جاری": (datetime.now().replace(month=1, day=1), datetime.now()),
-                "کل": (datetime(2000, 1, 1), datetime.now())
-            }
-            
-            # دوره زمانی فعلی
-            self.current_period = "ماه جاری"
-            
-            # نوع معامله فعلی
-            self.current_deal_type = "sale"  # یا "rent"
-            
-            # داده‌های آماری
-            self.stats_data = {
-                "total_properties": 0,
-                "total_value": 0,
-                "recent_listings": 0,
-                "recent_transactions": 0,
-                "popular_districts": [],
-                "price_trends": [],
-                "property_distributions": {}
-            }
-            
-            # راه‌اندازی رابط کاربری
-            self.setup_ui()
-            
-            # به‌روزرسانی اولیه داده‌ها
-            self.refresh_dashboard()
-            
-            # تنظیم تایمر برای به‌روزرسانی خودکار
-            self.refresh_timer = QTimer(self)
-            self.refresh_timer.timeout.connect(self.refresh_dashboard)
-            
-            # تعیین فاصله به‌روزرسانی بر اساس تنظیمات
-            try:
-                refresh_interval = config_manager.get_value(
-                    ConfigSection.GENERAL, "dashboard_refresh_interval", 5
-                )
-                # تبدیل دقیقه به میلی‌ثانیه
-                self.refresh_timer.start(refresh_interval * 60 * 1000)
-            except Exception as e:
-                logger.error(f"خطا در تنظیم تایمر به‌روزرسانی: {e}")
-                # مقدار پیش‌فرض 5 دقیقه
-                self.refresh_timer.start(5 * 60 * 1000)
-        
+            from property_management.property_manager import PropertyManager
+            self.property_manager = PropertyManager()
+            self.residential_bridge = self.property_manager.get_bridge('residential')
+            self.commercial_bridge = self.property_manager.get_bridge('commercial')
+            self.land_bridge = self.property_manager.get_bridge('land')
         except Exception as e:
-            logger.error(f"خطا در مقداردهی Dashboard: {e}")
-            QMessageBox.warning(self, "خطا", f"خطا در بارگذاری داشبورد: {str(e)}")
+            self.logger.error(f"خطا در راه‌اندازی برایج‌ها: {str(e)}")
+            QMessageBox.critical(self, "خطا", f"خطا در اتصال به دیتابیس: {str(e)}")
+        
+        # گزارش‌ساز
+        try:
+            from property_management.report_generator import ReportGenerator
+            self.report_generator = ReportGenerator()
+        except Exception as e:
+            self.logger.error(f"خطا در راه‌اندازی گزارش‌ساز: {str(e)}")
+            QMessageBox.critical(self, "خطا", f"خطا در راه‌اندازی گزارش‌ساز: {str(e)}")
+            
+        # تنظیمات اولیه
+        self.current_period = "month"  # مقدار پیش‌فرض: ماه جاری
+        self.current_deal_type = "all"  # مقدار پیش‌فرض: همه معاملات
+        
+        # تنظیم دوره‌های زمانی
+        self.time_periods = {
+            "امروز": (datetime.now().replace(hour=0, minute=0, second=0), datetime.now()),
+            "هفته": (datetime.now() - timedelta(days=datetime.now().weekday()), datetime.now()),
+            "ماه": (datetime.now().replace(day=1), datetime.now()),
+            "سه ماه": (datetime.now() - timedelta(days=90), datetime.now()),
+            "سال": (datetime.now().replace(month=1, day=1), datetime.now()),
+            "کل": (datetime(2000, 1, 1), datetime.now())
+        }
+        
+        # ذخیره‌سازی آمار
+        self.stats_data = {
+            "total_properties": 0,
+            "total_value": 0,
+            "recent_listings": 0,
+            "recent_transactions": 0
+        }
+        
+        # راه‌اندازی رابط کاربری
+        self.setup_ui()
+        
+        # به‌روزرسانی اولیه داشبورد
+        self.refresh_dashboard()
+        
+        self.logger.info(f"داشبورد برای کاربر {username} ایجاد شد")
     
     def setup_ui(self):
         """راه‌اندازی رابط کاربری داشبورد"""
@@ -205,11 +167,11 @@ class Dashboard(QWidget):
             charts_layout.addWidget(self.property_count_chart, 0, 0)
             
             # نمودار توزیع املاک بر اساس منطقه
-            self.district_distribution_chart = DistrictDistributionChart(self.report_generator)
+            self.district_distribution_chart = DistrictDistributionChart()
             charts_layout.addWidget(self.district_distribution_chart, 0, 1)
             
             # نمودار توزیع قیمت
-            self.price_range_chart = PriceRangeChart(self.report_generator)
+            self.price_range_chart = PriceRangeChart()
             charts_layout.addWidget(self.price_range_chart, 1, 0, 1, 2)
         except Exception as e:
             logger.error(f"خطا در ایجاد نمودارها: {e}")

@@ -541,7 +541,10 @@ class LandTab(QWidget):
             table.setItem(row_position, 0, QTableWidgetItem(str(prop.id)))
             
             # نوع کاربری
-            table.setItem(row_position, 1, QTableWidgetItem(prop.land_type.decode('utf-8')))
+            land_type = prop.land_type
+            if hasattr(land_type, 'decode'):
+                land_type = land_type.decode('utf-8')
+            table.setItem(row_position, 1, QTableWidgetItem(land_type))
             
             # منطقه
             table.setItem(row_position, 2, QTableWidgetItem(str(prop.district)))
@@ -596,7 +599,11 @@ class LandTab(QWidget):
             
             for prop in properties:
                 # بررسی شرایط فیلتر
-                if land_type != "all" and prop.land_type.decode('utf-8') != land_type:
+                land_type_value = prop.land_type
+                if hasattr(land_type_value, 'decode'):
+                    land_type_value = land_type_value.decode('utf-8')
+                    
+                if land_type != "all" and land_type_value != land_type:
                     continue
                     
                 if district > 0 and prop.district != district:
@@ -715,11 +722,15 @@ class LandTab(QWidget):
                 return
             
             # نمایش پنجره جزئیات
+            land_type_value = selected_property.land_type
+            if hasattr(land_type_value, 'decode'):
+                land_type_value = land_type_value.decode('utf-8')
+                
             details_message = f"""
 اطلاعات زمین:
 --------------------
 شناسه: {selected_property.id}
-نوع کاربری: {selected_property.land_type.decode('utf-8')}
+نوع کاربری: {land_type_value}
 منطقه: {selected_property.district}
 متراژ: {selected_property.area} متر مربع
 طول: {selected_property.length} متر

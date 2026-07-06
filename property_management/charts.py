@@ -373,18 +373,30 @@ class PieChart(BaseChart):
                 cmap = plt.cm.get_cmap(colors, len(labels))
                 colors = [cmap(i) for i in range(len(labels))]
             
-            # نمایش درصدها و مقادیر
-            if show_values:
+            # تنظیم نمایش درصدها و مقادیر
+            if show_values and show_percent:
+                # نمایش هم درصد و هم مقدار
                 def make_autopct(values):
                     def my_autopct(pct):
                         total = sum(values)
                         val = int(round(pct*total/100.0))
-                        return f'{pct:.1f}%\n({val:,})' if show_percent else f'({val:,})'
+                        return f'{pct:.1f}%\n({val:,})'
                     return my_autopct
                 autopct = make_autopct(values)
-            elif show_percent:
+            elif show_values and not show_percent:
+                # فقط نمایش مقدار (بدون درصد)
+                def make_autopct(values):
+                    def my_autopct(pct):
+                        total = sum(values)
+                        val = int(round(pct*total/100.0))
+                        return f'({val:,})'
+                    return my_autopct
+                autopct = make_autopct(values)
+            elif show_percent and not show_values:
+                # فقط نمایش درصد (بدون مقدار)
                 autopct = '%1.1f%%'
             else:
+                # هیچ کدام نمایش داده نشود
                 autopct = None
             
             # رسم نمودار دایره‌ای
@@ -405,7 +417,7 @@ class PieChart(BaseChart):
             for text in texts:
                 text.set_fontsize(10)
             
-            if show_values:
+            if autopct is not None:
                 for autotext in autotexts:
                     autotext.set_fontsize(9)
                     autotext.set_fontweight('bold')

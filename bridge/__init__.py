@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Bridge module between C core and Python UI.
+پکیج bridge برای ارتباط بین کد پایتون و کتابخانه C
 """
 
 # Use mock_lib instead of real C library
-from .mock_lib import c_lib
+from .lib_handler import get_lib_instance
+
+# Get instance of C library
+c_lib = get_lib_instance()
 
 from .property_bridge import (
     register_property, 
@@ -18,6 +21,8 @@ from .property_bridge import (
     DEAL_TYPE_SALE,
     DEAL_TYPE_RENT
 )
+
+from .lib_handler import get_lib_instance, set_use_mock
 
 # Package version
 __version__ = '1.0.0'

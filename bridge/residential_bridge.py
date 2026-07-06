@@ -77,22 +77,30 @@ class ResidentialPropertyStruct(ctypes.Structure):
 
 # تنظیم انواع پارامترها و مقادیر بازگشتی توابع کتابخانه C
 def setup_c_functions():
+    """تنظیم انواع آرگومان‌ها و مقادیر بازگشتی برای توابع کتابخانه C"""
+    
+    # بررسی کنیم آیا کتابخانه موک است
+    import inspect
+    if inspect.isclass(type(c_lib)) and hasattr(c_lib, '__class__') and c_lib.__class__.__name__ == 'MockCLib':
+        logger.info("از کتابخانه موک استفاده می‌شود - تنظیم توابع C نادیده گرفته می‌شود")
+        return
+    
     # ثبت ملک مسکونی برای فروش
     c_lib.residential_register_sale.argtypes = [
-        ctypes.c_char_p,  # username
-        ctypes.c_char_p,  # district
-        ctypes.c_char_p,  # address
-        ctypes.c_int,     # buildingAge
-        ctypes.c_float,   # areaSize
-        ctypes.c_int,     # bedrooms
-        ctypes.c_int,     # floor
-        ctypes.c_int,     # totalFloors
-        ctypes.c_int,     # hasElevator
-        ctypes.c_int,     # hasParking
-        ctypes.c_int,     # hasStorage
-        ctypes.c_double,  # sellingPrice
-        ctypes.c_char_p,  # contactPhone
-        ctypes.c_char_p   # description
+        ctypes.c_char_p,  # نام کاربری
+        ctypes.c_char_p,  # منطقه
+        ctypes.c_char_p,  # آدرس
+        ctypes.c_int,     # سن ساختمان
+        ctypes.c_float,   # متراژ
+        ctypes.c_int,     # تعداد اتاق خواب
+        ctypes.c_int,     # طبقه
+        ctypes.c_int,     # تعداد کل طبقات
+        ctypes.c_int,     # آسانسور دارد
+        ctypes.c_int,     # پارکینگ دارد
+        ctypes.c_int,     # انباری دارد
+        ctypes.c_double,  # قیمت فروش
+        ctypes.c_char_p,  # شماره تماس
+        ctypes.c_char_p   # توضیحات
     ]
     c_lib.residential_register_sale.restype = ctypes.c_int
 
@@ -299,14 +307,17 @@ class ResidentialBridge:
             # بررسی کنیم آیا از کتابخانه mock استفاده می‌شود
             if 'bridge.mock_lib' in sys.modules:
                 # اگر اینجا یعنی از کتابخانه mock استفاده می‌شود
-                from bridge.mock_lib import mock_data
+                from bridge.mock_lib import mock_data, PropertyObject
                 
                 # تبدیل نوع معامله به رشته
                 deal_type_str = "sale" if deal_type == "sale" or deal_type == 1 else "rent"
                 
+                # تبدیل دیکشنری‌ها به اشیاء PropertyObject
+                properties = [PropertyObject(prop_dict) for prop_dict in mock_data['residential'][deal_type_str]]
+                
                 # برگرداندن داده‌های آماده از mock
-                logger.info(f"استفاده از داده‌های mock برای املاک مسکونی: {len(mock_data['residential'][deal_type_str])} ملک یافت شد")
-                return mock_data['residential'][deal_type_str]
+                logger.info(f"استفاده از داده‌های mock برای املاک مسکونی: {len(properties)} ملک یافت شد")
+                return properties
             
             # تبدیل نوع معامله به عدد متناظر
             deal_type_code = DEAL_TYPE_SALE if deal_type == "sale" else DEAL_TYPE_RENT

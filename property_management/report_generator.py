@@ -411,42 +411,76 @@ class ReportGenerator:
                                 output_format: str = 'text',
                                 output_file: str = None) -> Union[str, pd.DataFrame]:
         """
-        تولید گزارش تعداد املاک به تفکیک منطقه
+        تولید گزارش توزیع املاک بر اساس منطقه
         
         Args:
             property_type (str, optional): نوع ملک ('residential', 'commercial', 'land', 'all')
-            deal_type (int, optional): نوع معامله (1: فروش، 2: اجاره)
+            deal_type (int, optional): نوع معامله (1: فروش، 2: اجاره، None: همه)
             output_format (str, optional): فرمت خروجی ('text', 'csv', 'dataframe')
             output_file (str, optional): نام فایل خروجی
             
         Returns:
             Union[str, pd.DataFrame]: گزارش به فرمت متنی یا دیتافریم pandas
         """
-        properties = self._get_all_properties(deal_type)
+        # تبدیل پارامتر deal_type از رشته به عدد اگر نیاز است
+        if isinstance(deal_type, str):
+            if deal_type.lower() == 'sale':
+                deal_type = 1
+            elif deal_type.lower() == 'rent':
+                deal_type = 2
+            else:
+                deal_type = None
+                
+        properties = self._get_all_properties(deal_type=deal_type)
+        
+        # برای هر منطقه، تعداد املاک در هر دسته را محاسبه می‌کنیم
         district_counts = {}
         
-        # جمع‌آوری املاک بر اساس منطقه
+        # شمارش املاک مسکونی
         if property_type == 'all' or property_type == 'residential':
             for prop in properties['residential']:
                 district = prop.get('district', 'Unknown')
+                
                 if district not in district_counts:
-                    district_counts[district] = {'residential': 0, 'commercial': 0, 'land': 0, 'total': 0}
+                    district_counts[district] = {
+                        'residential': 0,
+                        'commercial': 0,
+                        'land': 0,
+                        'total': 0
+                    }
+                    
                 district_counts[district]['residential'] += 1
                 district_counts[district]['total'] += 1
         
+        # شمارش املاک تجاری
         if property_type == 'all' or property_type == 'commercial':
             for prop in properties['commercial']:
                 district = prop.get('district', 'Unknown')
+                
                 if district not in district_counts:
-                    district_counts[district] = {'residential': 0, 'commercial': 0, 'land': 0, 'total': 0}
+                    district_counts[district] = {
+                        'residential': 0,
+                        'commercial': 0,
+                        'land': 0,
+                        'total': 0
+                    }
+                    
                 district_counts[district]['commercial'] += 1
                 district_counts[district]['total'] += 1
         
+        # شمارش زمین‌ها
         if property_type == 'all' or property_type == 'land':
             for prop in properties['land']:
                 district = prop.get('district', 'Unknown')
+                
                 if district not in district_counts:
-                    district_counts[district] = {'residential': 0, 'commercial': 0, 'land': 0, 'total': 0}
+                    district_counts[district] = {
+                        'residential': 0,
+                        'commercial': 0,
+                        'land': 0,
+                        'total': 0
+                    }
+                    
                 district_counts[district]['land'] += 1
                 district_counts[district]['total'] += 1
         
@@ -460,6 +494,22 @@ class ReportGenerator:
                 'Land': counts['land'],
                 'Total': counts['total']
             })
+        
+        # اگر داده‌ای نداریم، دیتافریم خالی برگردان
+        if not df_data:
+            logger.warning(f"No district data available for {property_type} properties")
+            empty_df = pd.DataFrame(columns=['District', 'Residential', 'Commercial', 'Land', 'Total'])
+            if output_format == 'dataframe':
+                return empty_df
+            elif output_format == 'csv':
+                if output_file is None:
+                    output_file = os.path.join(self.output_dir, 
+                                            f"district_report_{property_type}_empty_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
+                empty_df.to_csv(output_file, index=False)
+                logger.info(f"Empty district report saved to {output_file}")
+                return output_file
+            else:
+                return "No data available for district report."
         
         # مرتب‌سازی بر اساس تعداد کل نزولی
         df = pd.DataFrame(df_data).sort_values('Total', ascending=False).reset_index(drop=True)

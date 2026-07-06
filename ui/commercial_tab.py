@@ -497,39 +497,50 @@ class CommercialTab(QWidget):
             table.setItem(row_position, 0, QTableWidgetItem(str(prop.id)))
             
             # نوع ملک
-            table.setItem(row_position, 1, QTableWidgetItem(prop.property_type.decode('utf-8')))
+            property_type = prop.property_type
+            if hasattr(property_type, 'decode'):
+                property_type = property_type.decode('utf-8')
+            table.setItem(row_position, 1, QTableWidgetItem(property_type))
             
             # منطقه
             table.setItem(row_position, 2, QTableWidgetItem(str(prop.district)))
             
             # متراژ
-            table.setItem(row_position, 3, QTableWidgetItem(f"{prop.area:.1f}"))
+            area = prop.area if hasattr(prop, 'area') else 0
+            table.setItem(row_position, 3, QTableWidgetItem(f"{area:.1f}"))
             
             # سن بنا
-            table.setItem(row_position, 4, QTableWidgetItem(str(prop.age)))
+            age = prop.age if hasattr(prop, 'age') else 0
+            table.setItem(row_position, 4, QTableWidgetItem(str(age)))
             
             # تعداد اتاق
-            table.setItem(row_position, 5, QTableWidgetItem(str(prop.rooms)))
+            rooms = prop.rooms if hasattr(prop, 'rooms') else 0
+            table.setItem(row_position, 5, QTableWidgetItem(str(rooms)))
             
             if deal_type == "sale":
                 # قیمت
-                price_item = QTableWidgetItem(f"{prop.price:,}")
+                price = prop.price if hasattr(prop, 'price') else 0
+                price_item = QTableWidgetItem(f"{price:,}")
                 table.setItem(row_position, 6, price_item)
                 
                 # وضعیت
-                status_item = QTableWidgetItem("فعال" if prop.is_active else "غیرفعال")
+                is_active = prop.is_active if hasattr(prop, 'is_active') else True
+                status_item = QTableWidgetItem("فعال" if is_active else "غیرفعال")
                 table.setItem(row_position, 7, status_item)
             else:
                 # ودیعه
-                deposit_item = QTableWidgetItem(f"{prop.deposit:,}")
+                deposit = prop.deposit if hasattr(prop, 'deposit') else 0
+                deposit_item = QTableWidgetItem(f"{deposit:,}")
                 table.setItem(row_position, 6, deposit_item)
                 
                 # اجاره
-                rent_item = QTableWidgetItem(f"{prop.rent:,}")
+                rent = prop.rent if hasattr(prop, 'rent') else 0
+                rent_item = QTableWidgetItem(f"{rent:,}")
                 table.setItem(row_position, 7, rent_item)
                 
                 # وضعیت
-                status_item = QTableWidgetItem("فعال" if prop.is_active else "غیرفعال")
+                is_active = prop.is_active if hasattr(prop, 'is_active') else True
+                status_item = QTableWidgetItem("فعال" if is_active else "غیرفعال")
                 table.setItem(row_position, 8, status_item)
     
     def apply_filters(self, deal_type):
@@ -552,7 +563,11 @@ class CommercialTab(QWidget):
             
             for prop in properties:
                 # بررسی شرایط فیلتر
-                if property_type != "all" and prop.property_type.decode('utf-8') != property_type:
+                property_type_value = prop.property_type
+                if hasattr(property_type_value, 'decode'):
+                    property_type_value = property_type_value.decode('utf-8')
+                    
+                if property_type != "all" and property_type_value != property_type:
                     continue
                     
                 if district > 0 and prop.district != district:
@@ -671,11 +686,15 @@ class CommercialTab(QWidget):
                 return
             
             # نمایش پنجره جزئیات
+            property_type_value = selected_property.property_type
+            if hasattr(property_type_value, 'decode'):
+                property_type_value = property_type_value.decode('utf-8')
+                
             details_message = f"""
 اطلاعات ملک تجاری:
 --------------------
 شناسه: {selected_property.id}
-نوع ملک: {selected_property.property_type.decode('utf-8')}
+نوع ملک: {property_type_value}
 منطقه: {selected_property.district}
 متراژ: {selected_property.area} متر مربع
 تعداد اتاق: {selected_property.rooms}

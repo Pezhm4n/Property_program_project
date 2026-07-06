@@ -73,6 +73,14 @@ class CommercialPropertyStruct(ctypes.Structure):
 
 # تنظیم انواع پارامترها و مقادیر بازگشتی توابع کتابخانه C
 def setup_c_functions():
+    """تنظیم انواع آرگومان‌ها و مقادیر بازگشتی برای توابع کتابخانه C"""
+    
+    # بررسی کنیم آیا کتابخانه موک است
+    import inspect
+    if inspect.isclass(type(c_lib)) and hasattr(c_lib, '__class__') and c_lib.__class__.__name__ == 'MockCLib':
+        logger.info("از کتابخانه موک استفاده می‌شود - تنظیم توابع C برای امکان تجاری نادیده گرفته می‌شود")
+        return
+    
     # ثبت ملک تجاری برای فروش
     c_lib.commercial_register_sale.argtypes = [
         ctypes.c_char_p,  # username
@@ -524,14 +532,17 @@ class CommercialBridge:
             # بررسی کنیم آیا از کتابخانه mock استفاده می‌شود
             if 'bridge.mock_lib' in sys.modules:
                 # اگر اینجا یعنی از کتابخانه mock استفاده می‌شود
-                from bridge.mock_lib import mock_data
+                from bridge.mock_lib import mock_data, PropertyObject
                 
                 # تبدیل نوع معامله به رشته
                 deal_type_str = "sale" if deal_type == "sale" or deal_type == 1 else "rent"
                 
+                # تبدیل دیکشنری‌ها به اشیاء PropertyObject
+                properties = [PropertyObject(prop_dict) for prop_dict in mock_data['commercial'][deal_type_str]]
+                
                 # برگرداندن داده‌های آماده از mock
-                logger.info(f"استفاده از داده‌های mock برای املاک تجاری: {len(mock_data['commercial'][deal_type_str])} ملک یافت شد")
-                return mock_data['commercial'][deal_type_str]
+                logger.info(f"استفاده از داده‌های mock برای املاک تجاری: {len(properties)} ملک یافت شد")
+                return properties
             
             # تبدیل نوع معامله به عدد متناظر
             deal_type_code = DEAL_TYPE_SALE if deal_type == "sale" else DEAL_TYPE_RENT

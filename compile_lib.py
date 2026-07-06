@@ -1,244 +1,240 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
-ابزار کامپایل کتابخانه C برای سیستم مدیریت املاک
-این اسکریپت فایل‌های C را کامپایل کرده و کتابخانه اشتراکی را ایجاد می‌کند
+Script to compile the C library for the property management program.
+This script automatically detects the Python architecture and compiles the appropriate library.
 """
 
 import os
 import sys
-import shutil
 import platform
+import struct
 import subprocess
+import shutil
 import logging
-from pathlib import Path
-import ctypes
 
-# تنظیم لاگینگ
+# Set up logging
+log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, 'compile_log.txt')
+
 logging.basicConfig(
+    filename=log_file,
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("compile_log.txt")
-    ]
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger(__name__)
 
-# مسیرهای پروژه
-PROJECT_ROOT = Path(__file__).parent
-SRC_DIR = PROJECT_ROOT / "src"
-INCLUDE_DIR = PROJECT_ROOT / "include"
-LIB_DIR = PROJECT_ROOT / "lib"
-OBJ_DIR = PROJECT_ROOT / "obj"
+logger = logging.getLogger('compile_lib')
 
-# بررسی و ایجاد پوشه‌های مورد نیاز
-def setup_directories():
-    logger.info("تنظیم پوشه‌های مورد نیاز برای کامپایل...")
-    for directory in [LIB_DIR, OBJ_DIR]:
-        directory.mkdir(exist_ok=True)
-        logger.info(f"پوشه {directory} آماده شد")
+# Add console handler for logging
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+formatter = logging.Formatter('%(levelname)s: %(message)s')
+console.setFormatter(formatter)
+logger.addHandler(console)
 
-# تشخیص سیستم عامل و تنظیم پارامترهای کامپایل
-def get_compiler_settings():
-    system = platform.system()
-    if system == "Windows":
-        return {
-            "compiler": "gcc",
-            "obj_ext": ".o",
-            "lib_prefix": "",
-            "lib_ext": ".dll",
-            "compile_flags": f"-I{INCLUDE_DIR} -c -fPIC",
-            "link_flags": "-shared",
-            "output_flag": "-o",
-            "lib_name": "property_lib.dll"
-        }
-    elif system == "Linux":
-        return {
-            "compiler": "gcc",
-            "obj_ext": ".o",
-            "lib_prefix": "lib",
-            "lib_ext": ".so",
-            "compile_flags": f"-I{INCLUDE_DIR} -c -fPIC",
-            "link_flags": "-shared",
-            "output_flag": "-o",
-            "lib_name": "libproperty_lib.so"
-        }
-    elif system == "Darwin":  # macOS
-        return {
-            "compiler": "gcc",
-            "obj_ext": ".o",
-            "lib_prefix": "lib",
-            "lib_ext": ".dylib",
-            "compile_flags": f"-I{INCLUDE_DIR} -c -fPIC",
-            "link_flags": "-shared -undefined dynamic_lookup",
-            "output_flag": "-o",
-            "lib_name": "libproperty_lib.dylib"
-        }
-    else:
-        logger.error(f"سیستم عامل پشتیبانی نشده: {system}")
-        sys.exit(1)
+def get_python_bits():
+    """Detect if Python is 32 or 64 bit"""
+    return struct.calcsize("P") * 8
 
-# بررسی وجود کامپایلر
-def check_compiler(compiler):
-    try:
-        subprocess.run([compiler, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except FileNotFoundError:
-        logger.warning(f"کامپایلر {compiler} پیدا نشد. تلاش برای ایجاد کتابخانه شبیه‌سازی شده...")
-        return False
-
-# کامپایل فایل‌های منبع
-def compile_sources(settings):
-    logger.info("شروع کامپایل فایل‌های منبع...")
-    obj_files = []
+def find_visual_studio_paths():
+    """Find possible paths for Visual Studio installations"""
+    # Common paths where Visual Studio might be installed
+    program_files = os.environ.get("ProgramFiles", "C:\\Program Files")
+    program_files_x86 = os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")
     
-    for src_file in SRC_DIR.glob("*.c"):
-        obj_file = OBJ_DIR / (src_file.stem + settings["obj_ext"])
-        cmd = [
-            settings["compiler"],
-            settings["compile_flags"],
-            str(src_file),
-            settings["output_flag"],
-            str(obj_file)
-        ]
+    vs_paths = []
+    
+    # Check for different versions of Visual Studio
+    for base_dir in [program_files, program_files_x86]:
+        # VS 2019
+        vs2019_path = os.path.join(base_dir, "Microsoft Visual Studio", "2019")
+        if os.path.exists(vs2019_path):
+            for edition in ["Community", "Professional", "Enterprise", "BuildTools"]:
+                edition_path = os.path.join(vs2019_path, edition)
+                if os.path.exists(edition_path):
+                    vs_paths.append(edition_path)
         
-        cmd_str = " ".join(cmd)
-        logger.info(f"اجرای دستور: {cmd_str}")
+        # VS 2017
+        vs2017_path = os.path.join(base_dir, "Microsoft Visual Studio", "2017")
+        if os.path.exists(vs2017_path):
+            for edition in ["Community", "Professional", "Enterprise", "BuildTools"]:
+                edition_path = os.path.join(vs2017_path, edition)
+                if os.path.exists(edition_path):
+                    vs_paths.append(edition_path)
+        
+        # VS 2015
+        vs2015_path = os.path.join(base_dir, "Microsoft Visual Studio 14.0")
+        if os.path.exists(vs2015_path):
+            vs_paths.append(vs2015_path)
+    
+    return vs_paths
+
+def compile_with_msvc():
+    """Compile the library using MSVC"""
+    logger.info("Compiling with MSVC...")
+    
+    # Set up paths
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    src_dir = os.path.join(project_dir, "src")
+    include_dir = os.path.join(project_dir, "include")
+    lib_dir = os.path.join(project_dir, "lib")
+    obj_dir = os.path.join(project_dir, "obj")
+    
+    # Create necessary directories
+    os.makedirs(lib_dir, exist_ok=True)
+    os.makedirs(obj_dir, exist_ok=True)
+    
+    # Check for source files
+    c_files = [f for f in os.listdir(src_dir) if f.endswith('.c')]
+    if not c_files:
+        logger.error("No C source files found in the src directory!")
+        return False
+    
+    # Determine compiler flags based on architecture
+    python_bits = get_python_bits()
+    if python_bits == 64:
+        cflags = "/O2 /W3 /nologo /D_AMD64_ /D_WIN64 /DWIN64 /D_WINDOWS /DNDEBUG /MD"
+        ldflags = "/DLL /MACHINE:X64 /NOLOGO /INCREMENTAL:NO"
+    else:
+        cflags = "/O2 /W3 /nologo /D_X86_ /DWIN32 /D_WINDOWS /DNDEBUG /MD"
+        ldflags = "/DLL /MACHINE:X86 /NOLOGO /INCREMENTAL:NO"
+    
+    # Compile each source file
+    object_files = []
+    for c_file in c_files:
+        src_file = os.path.join(src_dir, c_file)
+        obj_file = os.path.join(obj_dir, c_file.replace('.c', '.obj'))
+        object_files.append(f'"{obj_file}"')
+        
+        cmd = f'cl.exe {cflags} /I"{include_dir}" /c /Fo"{obj_file}" "{src_file}"'
+        logger.info(f"Compiling {c_file}...")
         
         try:
-            result = subprocess.run(cmd_str, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            logger.info(f"کامپایل {src_file.name} موفقیت‌آمیز بود")
-            obj_files.append(obj_file)
+            subprocess.check_call(cmd, shell=True)
         except subprocess.CalledProcessError as e:
-            logger.error(f"خطا در کامپایل {src_file.name}:")
-            logger.error(f"خروجی: {e.stdout}")
-            logger.error(f"خطا: {e.stderr}")
-            return None
+            logger.error(f"Error compiling {c_file}: {e}")
+            return False
     
-    return obj_files
-
-# لینک کردن فایل‌های شیء به کتابخانه اشتراکی
-def link_library(obj_files, settings):
-    if not obj_files:
-        logger.error("هیچ فایل شیء برای لینک کردن پیدا نشد")
-        return False
-    
-    lib_path = LIB_DIR / settings["lib_name"]
-    obj_files_str = " ".join(str(f) for f in obj_files)
-    
-    cmd = [
-        settings["compiler"],
-        settings["link_flags"],
-        settings["output_flag"],
-        str(lib_path),
-        obj_files_str
-    ]
-    
-    cmd_str = " ".join(cmd)
-    logger.info(f"لینک کردن کتابخانه با دستور: {cmd_str}")
+    # Create the DLL
+    output_dll = os.path.join(lib_dir, "property_lib.dll")
+    cmd = f'link.exe {ldflags} /OUT:"{output_dll}" {" ".join(object_files)}'
+    logger.info("Creating DLL...")
     
     try:
-        result = subprocess.run(cmd_str, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logger.info(f"کتابخانه با موفقیت در {lib_path} ایجاد شد")
-        return True
+        subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
-        logger.error("خطا در لینک کردن کتابخانه:")
-        logger.error(f"خروجی: {e.stdout}")
-        logger.error(f"خطا: {e.stderr}")
+        logger.error(f"Error creating DLL: {e}")
         return False
-
-# ایجاد یک کتابخانه شبیه‌سازی شده در صورت عدم وجود کامپایلر
-def create_mock_library():
-    system = platform.system()
     
-    if system == "Windows":
-        lib_path = LIB_DIR / "property_lib.dll"
-        # ایجاد یک DLL خالی با استفاده از ctypes
-        try:
-            lib_dir = os.path.abspath(str(LIB_DIR))
-            mock_code = f"""
-from ctypes import *
+    # Clean up object files
+    for obj_file in os.listdir(obj_dir):
+        if obj_file.endswith('.obj'):
+            os.remove(os.path.join(obj_dir, obj_file))
+    
+    logger.info(f"DLL successfully created at: {output_dll}")
+    return True
 
-# تابع تست
-@CFUNCTYPE(c_int)
-def test_function():
-    return 42
-
-# ایجاد کتابخانه شبیه‌سازی شده
-lib = CDLL(None)
-lib.test_function = test_function
-            """
-            
-            mock_py_path = LIB_DIR / "create_mock_dll.py"
-            with open(mock_py_path, 'w') as f:
-                f.write(mock_code)
-            
-            logger.info("اجرای اسکریپت ساخت کتابخانه شبیه‌سازی شده...")
-            subprocess.run([sys.executable, str(mock_py_path)], check=True)
-            
-            # ایجاد یک فایل خالی در صورت شکست روش بالا
-            if not lib_path.exists() or lib_path.stat().st_size == 0:
-                with open(lib_path, 'wb') as f:
-                    f.write(b'\x00' * 1024)  # ایجاد یک فایل باینری با حداقل محتوا
-            
-            logger.info(f"کتابخانه شبیه‌سازی شده در {lib_path} ایجاد شد")
-            return True
-        except Exception as e:
-            logger.error(f"خطا در ایجاد کتابخانه شبیه‌سازی شده: {e}")
-            return False
+def compile_with_gcc():
+    """Compile the library using GCC (MinGW)"""
+    logger.info("Compiling with GCC...")
+    
+    # Set up paths
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    src_dir = os.path.join(project_dir, "src")
+    include_dir = os.path.join(project_dir, "include")
+    lib_dir = os.path.join(project_dir, "lib")
+    
+    # Create necessary directories
+    os.makedirs(lib_dir, exist_ok=True)
+    
+    # Check for source files
+    c_files = [f for f in os.listdir(src_dir) if f.endswith('.c')]
+    if not c_files:
+        logger.error("No C source files found in the src directory!")
+        return False
+    
+    # Create source file list
+    source_files = [os.path.join(src_dir, f) for f in c_files]
+    source_files_str = ' '.join([f'"{f}"' for f in source_files])
+    
+    # Determine compiler flags based on architecture
+    python_bits = get_python_bits()
+    if python_bits == 64:
+        arch_flag = "-m64"
     else:
-        # برای لینوکس و مک‌او‌اس
-        if system == "Linux":
-            lib_path = LIB_DIR / "libproperty_lib.so"
-        else:  # macOS
-            lib_path = LIB_DIR / "libproperty_lib.dylib"
-        
-        try:
-            # ایجاد یک فایل خالی
-            with open(lib_path, 'wb') as f:
-                f.write(b'\x7FELF' if system == "Linux" else b'\xCF\xFA\xED\xFE')  # فقط هدر فایل
-                f.write(b'\x00' * 1024)  # اضافه کردن داده خالی
-            
-            # تنظیم مجوزهای اجرایی
-            os.chmod(lib_path, 0o755)
-            
-            logger.info(f"کتابخانه شبیه‌سازی شده در {lib_path} ایجاد شد")
-            return True
-        except Exception as e:
-            logger.error(f"خطا در ایجاد کتابخانه شبیه‌سازی شده: {e}")
-            return False
+        arch_flag = "-m32"
+    
+    # Output DLL path
+    output_dll = os.path.join(lib_dir, "property_lib.dll")
+    
+    # Compile command
+    cmd = f'gcc {arch_flag} -shared -o "{output_dll}" {source_files_str} -I"{include_dir}" -Wl,--out-implib,"{lib_dir}/libproperty.a" -O2'
+    logger.info("Compiling DLL...")
+    
+    try:
+        subprocess.check_call(cmd, shell=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error compiling DLL: {e}")
+        return False
+    
+    logger.info(f"DLL successfully created at: {output_dll}")
+    return True
 
 def main():
-    logger.info("شروع فرآیند کامپایل کتابخانه مدیریت املاک...")
+    """Main function to compile the library"""
+    logger.info("Starting library compilation process...")
     
-    # تنظیم پوشه‌ها
-    setup_directories()
+    # Check Python architecture
+    python_bits = get_python_bits()
+    logger.info(f"Python architecture: {python_bits}-bit")
     
-    # دریافت تنظیمات کامپایلر
-    settings = get_compiler_settings()
+    # Check for compilers
+    try:
+        subprocess.check_output("cl.exe", stderr=subprocess.STDOUT, shell=True)
+        msvc_available = True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        msvc_available = False
     
-    # بررسی وجود کامپایلر
-    if check_compiler(settings["compiler"]):
-        # کامپایل فایل‌های منبع
-        obj_files = compile_sources(settings)
-        
-        if obj_files:
-            # لینک کردن کتابخانه
-            if link_library(obj_files, settings):
-                logger.info("فرآیند کامپایل با موفقیت به پایان رسید")
-                return True
+    try:
+        subprocess.check_output("gcc --version", stderr=subprocess.STDOUT, shell=True)
+        gcc_available = True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        gcc_available = False
     
-    # در صورت عدم موفقیت در کامپایل، ساخت کتابخانه شبیه‌سازی شده
-    logger.warning("کامپایل با مشکل مواجه شد، در حال ایجاد کتابخانه شبیه‌سازی شده...")
-    if create_mock_library():
-        logger.info("کتابخانه شبیه‌سازی شده با موفقیت ایجاد شد")
-        return True
-    else:
-        logger.error("ایجاد کتابخانه شبیه‌سازی شده با شکست مواجه شد")
+    if not msvc_available and not gcc_available:
+        logger.error("No suitable compiler found. Please install Visual Studio with C++ tools or MinGW GCC.")
         return False
+    
+    # Let user choose compiler if both are available
+    if msvc_available and gcc_available:
+        print("\nAvailable compilers:")
+        print("1. MSVC (Visual Studio)")
+        print("2. GCC (MinGW)")
+        
+        choice = input("\nPlease enter the compiler number (1 or 2): ")
+        if choice == "1":
+            return compile_with_msvc()
+        elif choice == "2":
+            return compile_with_gcc()
+        else:
+            logger.error("Invalid choice. Exiting.")
+            return False
+    elif msvc_available:
+        return compile_with_msvc()
+    else:
+        return compile_with_gcc()
 
 if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1) 
+    try:
+        success = main()
+        if success:
+            print("\nCompilation completed successfully!")
+        else:
+            print("\nCompilation failed. Check logs for details.")
+            sys.exit(1)
+    except Exception as e:
+        logger.exception(f"Unexpected error: {e}")
+        print(f"\nUnexpected error: {e}")
+        sys.exit(1) 
