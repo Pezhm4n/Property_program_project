@@ -1,1 +1,4 @@
-# Placeholder
+"""
+__init__.py
+Real Estate Management System
+"""

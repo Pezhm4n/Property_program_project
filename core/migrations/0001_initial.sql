@@ -1,1 +1,3 @@
--- Placeholder
+-- Migration: 0001_initial.sql
+-- Description: Standard migration header
+-- Created at: 2026

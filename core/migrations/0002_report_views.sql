@@ -1,1 +1,3 @@
--- Placeholder
+-- Migration: 0002_report_views.sql
+-- Description: Standard migration header
+-- Created at: 2026
