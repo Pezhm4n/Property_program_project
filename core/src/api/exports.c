@@ -13,6 +13,18 @@ extern int property_create(const char* req, char** res);
 extern int property_archive(const char* req, char** res);
 extern int report_generate(const char* req, char** res);
 
+RE_API int re_get_api_version() {
+    return 100; // 1.0.0
+}
+
+RE_API int re_get_dll_version() {
+    return 100; // 1.0.0
+}
+
+RE_API int re_get_last_error() {
+    return 0; // @todo (Phase 5) Implement thread-local last error storage
+}
+
 RE_API void re_free_string(char* str) {
     if (str) {
         free(str);

@@ -17,6 +17,31 @@ extern "C" {
 #endif
 
 /**
+ * @brief Thread Safety Policy:
+ * All re_* functions are thread-safe ONLY IF SQLite is compiled with serialized mode
+ * and concurrent connections are properly managed. Until Phase 6, assume single-threaded.
+ * Undefined behavior may occur if called concurrently from Python without locks.
+ */
+
+/**
+ * @brief Get expected API version.
+ * @return Integer representing API version (e.g. 100 for 1.0.0).
+ */
+RE_API int re_get_api_version();
+
+/**
+ * @brief Get DLL actual build version.
+ * @return Integer representing DLL version (e.g. 100 for 1.0.0).
+ */
+RE_API int re_get_dll_version();
+
+/**
+ * @brief Get the last error code encountered by the DLL in the current thread.
+ * @return Project error code.
+ */
+RE_API int re_get_last_error();
+
+/**
  * @brief Frees a string allocated by the DLL.
  * MUST be called by the Python bridge for any string returned.
  */
