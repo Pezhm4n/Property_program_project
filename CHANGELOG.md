@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added (Phase 6.5 - Legacy Audit & Migration)
+- Detailed audit and mapping (`docs/legacy_audit.md`) covering all 32 legacy files.
+- Documented core business rules, validation criteria, and key algorithms.
+- Prioritized migration plan for C and Python business modules.
+
 ### Added (Phase 6.4 - Dashboard & Reporting UI)
 - Fully functional `DashboardPage` and `ReportsPage` connected statelessly to Bridge.
 - StatisticsCard, RecentActivity, and QPainter-based Chart skeleton widgets.
