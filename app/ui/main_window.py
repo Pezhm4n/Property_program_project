@@ -42,7 +42,7 @@ class MainWindow(BaseWindow):
         self.content_stack.addWidget(self.property_view)
         
         # Reports Page
-        self.reports_page = ReportsPage()
+        self.reports_page = ReportsPage(self.nav_manager.session)
         self.content_stack.addWidget(self.reports_page)
         
         main_layout.addWidget(self.sidebar)

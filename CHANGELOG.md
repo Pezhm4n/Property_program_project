@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added (Phase 7 - Business Rules, Reports, Export & Polish)
+- Implemented real-time dynamic Dashboard aggregating metrics directly from database.
+- Integrated PDF (reportlab) and Excel (xlsxwriter) exports inside ReportsPage.
+- Implemented database Backup and Restore services.
+- Migrated legacy BR-001 commission calculations (residential and commercial) to service layer.
+- Added full integration test suite verifying backup, restore, and commission logic.
+
 ### Added (Phase 6.5 - Legacy Audit & Migration)
 - Detailed audit and mapping (`docs/legacy_audit.md`) covering all 32 legacy files.
 - Documented core business rules, validation criteria, and key algorithms.

@@ -1,37 +1,87 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QFrame
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QFrame, QPushButton, QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'bridge')))
+from re_bridge.services import ReportService
 
 class ReportsPage(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, session_manager, parent=None):
         super().__init__(parent)
+        self.session = session_manager
         self.setObjectName("ReportsPage")
         
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(24, 24, 24, 24)
         
         # Header
-        header = QLabel("گزارش‌ها و تحلیل‌های مالی")
+        header = QLabel("گزارش‌ها و خروجی‌های سیستم")
         header.setStyleSheet("color: white; font-size: 22px; font-weight: bold; margin-bottom: 16px;")
         header.setAlignment(Qt.AlignmentFlag.AlignRight)
         main_layout.addWidget(header)
         
         # Sub-header explanation
-        desc = QLabel("این بخش در فازهای آینده (Phase 6.3/6.4 Core) فعال خواهد شد. ساختار و نوع گزارش‌های قابل دریافت در زیر مشخص گردیده است:")
+        desc = QLabel("دریافت خروجی‌های معتبر و ساختارهای مستند املاک بر اساس فیلترهای جاری:")
         desc.setStyleSheet("color: #A1A1AA; font-size: 13px; margin-bottom: 24px;")
         desc.setAlignment(Qt.AlignmentFlag.AlignRight)
         main_layout.addWidget(desc)
         
-        # Grid of future report card slots
+        # Grid of report card slots
         cards_layout = QHBoxLayout()
         cards_layout.setSpacing(16)
         
-        pdf_card = self.create_placeholder_card("📄 خروجی گزارش PDF", "امکان دریافت لیست فیلتر شده املاک به همراه لوگو و امضای آژانس در قالب PDF جهت پرینت.")
-        excel_card = self.create_placeholder_card("📊 خروجی Excel", "دریافت فایل اکسل چندبرگه شامل محاسبات کمیسیون، متراژ کل و تفکیک بر اساس مشاوران.")
-        print_card = self.create_placeholder_card("🖨 چاپ مستقیم فیش", "امکان پرینت مستقیم اطلاعات خلاصه ملک به روی فیش پرینتر برای ارائه به مشتری.")
+        # PDF Card
+        pdf_card = QFrame()
+        pdf_layout = QVBoxLayout(pdf_card)
+        pdf_title = QLabel("📄 خروجی گزارش PDF")
+        pdf_title.setStyleSheet("color: #38BDF8; font-size: 16px; font-weight: bold; margin-bottom: 8px;")
+        pdf_title.setAlignment(Qt.AlignmentFlag.AlignRight)
+        pdf_desc = QLabel("امکان دریافت لیست کامل املاک به همراه جزئیات و ساختار کلی در قالب فایل PDF.")
+        pdf_desc.setStyleSheet("color: #D4D4D8; font-size: 12px;")
+        pdf_desc.setWordWrap(True)
+        pdf_desc.setAlignment(Qt.AlignmentFlag.AlignRight)
+        btn_pdf = QPushButton("صادرات PDF")
+        btn_pdf.setStyleSheet("background-color: #0284C7; color: white; padding: 6px; border-radius: 4px;")
+        btn_pdf.clicked.connect(self._export_pdf)
+        pdf_layout.addWidget(pdf_title)
+        pdf_layout.addWidget(pdf_desc)
+        pdf_layout.addWidget(btn_pdf)
+        
+        # Excel Card
+        excel_card = QFrame()
+        excel_layout = QVBoxLayout(excel_card)
+        excel_title = QLabel("📊 خروجی Excel")
+        excel_title.setStyleSheet("color: #10B981; font-size: 16px; font-weight: bold; margin-bottom: 8px;")
+        excel_title.setAlignment(Qt.AlignmentFlag.AlignRight)
+        excel_desc = QLabel("دریافت فایل اکسل کامل شامل متراژ، قیمت و سایر جزئیات ستونی املاک جهت تحلیل مالی.")
+        excel_desc.setStyleSheet("color: #D4D4D8; font-size: 12px;")
+        excel_desc.setWordWrap(True)
+        excel_desc.setAlignment(Qt.AlignmentFlag.AlignRight)
+        btn_excel = QPushButton("صادرات Excel")
+        btn_excel.setStyleSheet("background-color: #059669; color: white; padding: 6px; border-radius: 4px;")
+        btn_excel.clicked.connect(self._export_excel)
+        excel_layout.addWidget(excel_title)
+        excel_layout.addWidget(excel_desc)
+        excel_layout.addWidget(btn_excel)
+        
+        # Styling for cards
+        card_style = """
+            QFrame {
+                background-color: #2D2D30;
+                border: 1px solid #3F3F46;
+                border-radius: 8px;
+                padding: 16px;
+            }
+            QFrame:hover {
+                border-color: #52525B;
+            }
+        """
+        pdf_card.setStyleSheet(card_style)
+        excel_card.setStyleSheet(card_style)
         
         cards_layout.addWidget(pdf_card)
         cards_layout.addWidget(excel_card)
-        cards_layout.addWidget(print_card)
         main_layout.addLayout(cards_layout)
         
         main_layout.addStretch()
@@ -43,38 +93,20 @@ class ReportsPage(QWidget):
             }
         """)
 
-    def create_placeholder_card(self, title: str, text: str) -> QFrame:
-        card = QFrame()
-        card.setStyleSheet("""
-            QFrame {
-                background-color: #2D2D30;
-                border: 1px dashed #3F3F46;
-                border-radius: 8px;
-                padding: 16px;
-            }
-            QFrame:hover {
-                border-color: #0E7490;
-            }
-        """)
-        
-        layout = QVBoxLayout(card)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        
-        lbl_title = QLabel(title)
-        lbl_title.setStyleSheet("color: #38BDF8; font-size: 16px; font-weight: bold; margin-bottom: 8px;")
-        lbl_title.setAlignment(Qt.AlignmentFlag.AlignRight)
-        layout.addWidget(lbl_title)
-        
-        lbl_desc = QLabel(text)
-        lbl_desc.setStyleSheet("color: #D4D4D8; font-size: 12px; line-height: 18px;")
-        lbl_desc.setWordWrap(True)
-        lbl_desc.setAlignment(Qt.AlignmentFlag.AlignRight)
-        layout.addWidget(lbl_desc)
-        
-        # Add a placeholder label "در حال توسعه"
-        lbl_badge = QLabel("در حال توسعه (غیرفعال)")
-        lbl_badge.setStyleSheet("color: #EF4444; font-size: 10px; font-weight: bold; border: 1px solid #EF4444; border-radius: 4px; padding: 2px 6px; margin-top: 12px;")
-        lbl_badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_badge, alignment=Qt.AlignmentFlag.AlignLeft)
-        
-        return card
+    def _export_pdf(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "ذخیره فایل PDF", "", "PDF Files (*.pdf)")
+        if file_path:
+            try:
+                ReportService.export_properties_pdf(self.session.session_token, file_path)
+                QMessageBox.information(self, "موفقیت", "فایل PDF با موفقیت ذخیره شد.")
+            except Exception as e:
+                QMessageBox.critical(self, "خطا", f"خطا در تولید فایل PDF: {e}")
+
+    def _export_excel(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "ذخیره فایل Excel", "", "Excel Files (*.xlsx)")
+        if file_path:
+            try:
+                ReportService.export_properties_excel(self.session.session_token, file_path)
+                QMessageBox.information(self, "موفقیت", "فایل Excel با موفقیت ذخیره شد.")
+            except Exception as e:
+                QMessageBox.critical(self, "خطا", f"خطا در تولید فایل Excel: {e}")

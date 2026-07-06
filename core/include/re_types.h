@@ -19,5 +19,6 @@
 #define RE_ERR_CORRUPT       -11
 #define RE_ERR_MEM           -98
 #define RE_ERR_INTERNAL      -99
+#define RE_ERR_NOT_IMPLEMENTED -100
 
 #endif // RE_TYPES_H

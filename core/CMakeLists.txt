@@ -38,8 +38,11 @@ add_library(re_core SHARED
     src/errors/error_handler.c
 )
 
+set_target_properties(re_core PROPERTIES PREFIX "" IMPORT_PREFIX "")
+
 # Includes
 target_include_directories(re_core PUBLIC include)
+target_include_directories(re_core PUBLIC src/models)
 target_include_directories(re_core PRIVATE src)
 target_include_directories(re_core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_include_directories(re_core PRIVATE third_party/sqlite3)
@@ -50,14 +53,15 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/sqlite3/sqlite3.c")
     target_sources(re_core PRIVATE third_party/sqlite3/sqlite3.c)
 else()
     message(WARNING "sqlite3.c not found in third_party/sqlite3/. Pinned amalgamation required for successful build.")
+    target_link_libraries(re_core PRIVATE sqlite3)
 endif()
 
-# Third-party cJSON Integration
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cjson/cJSON.c")
     target_sources(re_core PRIVATE third_party/cjson/cJSON.c)
     target_include_directories(re_core PRIVATE third_party/cjson)
 else()
     message(WARNING "cJSON.c not found in third_party/cjson/. Pinned cJSON required for successful build.")
+    target_link_libraries(re_core PRIVATE cjson)
 endif()
 
 # Optional: Enable testing

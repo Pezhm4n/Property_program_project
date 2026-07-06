@@ -4,7 +4,11 @@
  * @copyright Real Estate Management System
  */
 #include "re_core.h"
+#include "re_types.h"
 #include <stdlib.h>
+#include <string.h>
+
+static __thread int last_error = 0;
 
 // Forward declarations to Service Layer (which will handle the business logic)
 extern int auth_login(const char* req, char** res);
@@ -110,6 +114,7 @@ RE_API int re_validate_session(const char* request_json, char** response_json_ou
 }
 
 RE_API int re_ping(const char* request_json, char** response_json_out) {
+    (void)request_json;
     if (!response_json_out) return RE_ERR_VALIDATION;
     char* resp = (char*)malloc(16);
     if (!resp) return RE_ERR_INTERNAL;
