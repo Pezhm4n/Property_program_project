@@ -9,9 +9,10 @@ class PropertyDialog(QDialog):
     def __init__(self, parent=None, property_dto=None):
         super().__init__(parent)
         self.setWindowTitle("ثبت / ویرایش ملک")
-        self.resize(400, 500)
+        self.resize(400, 550)
         self.property_id = None
         self.is_archived = False
+        self.original_dto = property_dto
         
         layout = QVBoxLayout(self)
         form = QFormLayout()
@@ -20,13 +21,20 @@ class PropertyDialog(QDialog):
         self.cmb_category.addItems(["مسکونی", "تجاری", "زمین"])
         
         self.cmb_listing_type = QComboBox()
-        self.cmb_listing_type.addItems(["فروش", "رهن و اجاره"])
+        self.cmb_listing_type.addItems(["فروش", "اجاره", "رهن"])
+        
+        self.txt_city = QLineEdit()
+        self.txt_city.setText("تهران")
         
         self.spn_district = QSpinBox()
         self.spn_district.setRange(1, 22)
         
         self.txt_address = QLineEdit()
         self.txt_phone = QLineEdit()
+        
+        self.spn_area = QSpinBox()
+        self.spn_area.setRange(1, 1000000)
+        self.spn_area.setValue(100)
         
         self.spn_sale = QSpinBox()
         self.spn_sale.setRange(0, 2000000000)
@@ -42,9 +50,11 @@ class PropertyDialog(QDialog):
         
         form.addRow("نوع ملک:", self.cmb_category)
         form.addRow("نوع آگهی:", self.cmb_listing_type)
+        form.addRow("شهر:", self.txt_city)
         form.addRow("منطقه:", self.spn_district)
         form.addRow("آدرس:", self.txt_address)
         form.addRow("شماره تماس:", self.txt_phone)
+        form.addRow("متراژ (متر مربع):", self.spn_area)
         form.addRow("قیمت فروش:", self.spn_sale)
         form.addRow("مبلغ رهن:", self.spn_deposit)
         form.addRow("مبلغ اجاره:", self.spn_rent)
@@ -64,9 +74,11 @@ class PropertyDialog(QDialog):
         self.is_archived = dto.is_archived
         self.cmb_category.setCurrentText(dto.category)
         self.cmb_listing_type.setCurrentText(dto.listing_type)
+        self.txt_city.setText(dto.city)
         self.spn_district.setValue(dto.municipal_district)
         self.txt_address.setText(dto.address)
         self.txt_phone.setText(dto.owner_phone)
+        self.spn_area.setValue(dto.area_sqm)
         self.spn_sale.setValue(dto.sale_price)
         self.spn_deposit.setValue(dto.rent_deposit)
         self.spn_rent.setValue(dto.rent_monthly)
@@ -77,10 +89,13 @@ class PropertyDialog(QDialog):
             is_archived=self.is_archived,
             category=self.cmb_category.currentText(),
             listing_type=self.cmb_listing_type.currentText(),
+            city=self.txt_city.text(),
             municipal_district=self.spn_district.value(),
             address=self.txt_address.text(),
             owner_phone=self.txt_phone.text(),
+            area_sqm=self.spn_area.value(),
             sale_price=self.spn_sale.value(),
             rent_deposit=self.spn_deposit.value(),
-            rent_monthly=self.spn_rent.value()
+            rent_monthly=self.spn_rent.value(),
+            date_registered=self.original_dto.date_registered if self.original_dto else ""
         )

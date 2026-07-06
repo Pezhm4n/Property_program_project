@@ -39,6 +39,8 @@ class SkeletonChart(QWidget):
             self.data = [10, 15, 8, 12, 20, 25] # default mock
             
         max_val = max(self.data) if self.data else 1
+        if max_val == 0:
+            max_val = 1
         num_bars = len(self.data)
         spacing = 15
         bar_width = (width - (spacing * (num_bars + 1))) / num_bars
@@ -66,6 +68,8 @@ class SkeletonChart(QWidget):
             self.data = [5, 12, 15, 8, 10, 18] # default mock
             
         max_val = max(self.data) if self.data else 1
+        if max_val == 0:
+            max_val = 1
         num_points = len(self.data)
         spacing = width / (num_points - 1) if num_points > 1 else width
         

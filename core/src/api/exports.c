@@ -33,7 +33,7 @@ RE_API void re_free_string(char* str) {
 
 static void seed_default_admin_if_needed() {
     sqlite3_stmt* stmt = NULL;
-    int rc = db_prepare("SELECT COUNT(*) FROM users;", &stmt);
+    int rc = db_prepare("SELECT COUNT(*) FROM users WHERE username = 'admin';", &stmt);
     int count = 0;
     if (rc == 0) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
