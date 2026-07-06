@@ -251,7 +251,6 @@ int property_get_all(const char* req, char** res) {
         cJSON_AddNumberToObject(p_obj, "sale_price", props[i].sale_price);
         cJSON_AddNumberToObject(p_obj, "rent_deposit", props[i].rent_deposit);
         cJSON_AddNumberToObject(p_obj, "rent_monthly", props[i].rent_monthly);
-        cJSON_AddNumberToObject(p_obj, "created_by", props[i].created_by);
         cJSON_AddStringToObject(p_obj, "date_registered", props[i].created_at);
         cJSON_AddItemToArray(props_arr, p_obj);
     }
@@ -296,7 +295,6 @@ int property_get_by_id(const char* req, char** res) {
     cJSON_AddNumberToObject(p_obj, "sale_price", p.sale_price);
     cJSON_AddNumberToObject(p_obj, "rent_deposit", p.rent_deposit);
     cJSON_AddNumberToObject(p_obj, "rent_monthly", p.rent_monthly);
-    cJSON_AddNumberToObject(p_obj, "created_by", p.created_by);
     cJSON_AddStringToObject(p_obj, "date_registered", p.created_at);
     
     char* out_str = cJSON_PrintUnformatted(p_obj);

@@ -53,7 +53,3 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TEXT NOT NULL,
     FOREIGN KEY(actor_id) REFERENCES users(id)
 );
-
--- Seed default admin user (using SHA256 of 'admin123' or simple password for stub)
-INSERT OR IGNORE INTO users (username, password_hash, first_name, last_name, national_id, phone, role, created_at)
-VALUES ('admin', 'password123', 'مدیر', 'سیستم', '0012345678', '09123456789', 'admin', datetime('now'));

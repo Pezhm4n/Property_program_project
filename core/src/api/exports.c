@@ -31,6 +31,24 @@ RE_API void re_free_string(char* str) {
     }
 }
 
+static void seed_default_admin_if_needed() {
+    sqlite3_stmt* stmt = NULL;
+    int rc = db_prepare("SELECT COUNT(*) FROM users;", &stmt);
+    int count = 0;
+    if (rc == 0) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            count = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+    }
+    if (count == 0) {
+        db_execute(
+            "INSERT INTO users (username, password_hash, first_name, last_name, national_id, phone, role, created_at) "
+            "VALUES ('admin', 'password123', 'مدیر', 'سیستم', '0012345678', '09123456789', 'admin', datetime('now'));"
+        );
+    }
+}
+
 RE_API int re_initialize(const char* db_path, const char* migrations_path) {
     int rc = db_init(db_path, 5000);
     if (rc != 0) {
@@ -42,6 +60,7 @@ RE_API int re_initialize(const char* db_path, const char* migrations_path) {
         last_error = rc;
         return rc;
     }
+    seed_default_admin_if_needed();
     return 0;
 }
 
