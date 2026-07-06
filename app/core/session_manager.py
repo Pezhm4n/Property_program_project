@@ -50,6 +50,7 @@ class SessionManager:
         self.session_token = None
         self.username = None
         self.remember_me = False
+        self.theme = self.storage.load("theme") or "dark"
         self._load_preferences()
 
     def set_session(self, token: str, username: str, remember: bool):
@@ -57,6 +58,10 @@ class SessionManager:
         self.username = username
         self.remember_me = remember
         self._save_preferences()
+
+    def set_theme(self, theme: str):
+        self.theme = theme
+        self.storage.save("theme", theme)
 
     def clear_session(self):
         self.session_token = None

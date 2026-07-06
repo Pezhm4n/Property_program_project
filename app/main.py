@@ -23,16 +23,17 @@ def main():
     font = FontManager.setup_fonts()
     app.setFont(font)
     
+    # Initialize Navigation and launch
+    nav = NavigationManager()
+    
     # Initialize Theme
     theme_manager = ThemeManager()
-    theme_manager.apply_theme(app, "dark")
+    theme_manager.apply_theme(app, nav.session.theme)
     
     # Initialize Core DLL Database and Migrations
     from re_bridge.services import re_init, re_close
     re_init("real_estate.db", "core/migrations")
     
-    # Initialize Navigation and launch
-    nav = NavigationManager()
     nav.show_login()
     
     try:

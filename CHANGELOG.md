@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added (Phase 10 - UI/UX Polish & User Experience)
+- Implemented responsive QSS design tokens for custom fonts, borders (8px/12px/16px), scrollbars, and focus rings.
+- Redesigned Login Page as a sleek centered card layout with inline validation alerts and form focus glows.
+- Enhanced MainWindow sidebar styling and dynamic toolbar action visibility mapped per tab.
+- Integrated runtime dark/light theme switching with persistence in settings.json.
+- Redesigned QPainter dashboard charts to draw smooth cubic Bezier splines and translucent gradient fills.
+- Updated Property list table to support context menu operations (Edit, Archive/Restore) and double-click row triggers.
+- Enforced Right-to-Left (RTL) layout direction across all modal dialogs and alert boxes.
+
+### Added (Phase 8 - Architecture Validation & Core Completion)
+- Completed stateless C DLL database prepare statements and services mapping.
+- Integrated Argon2 security hashing lockout times and failed login attempts.
+- Added dynamic admin seeding checks in C core to check if admin user exists before seeding.
+- Moved automated gate review verification suite to scripts/ folder with execution timers and file validation.
+
 ### Added (Phase 7 - Business Rules, Reports, Export & Polish)
 - Implemented real-time dynamic Dashboard aggregating metrics directly from database.
 - Integrated PDF (reportlab) and Excel (xlsxwriter) exports inside ReportsPage.

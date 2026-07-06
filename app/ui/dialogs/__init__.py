@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 
 def show_error_dialog(parent, exception):
     dlg = QMessageBox(parent)
+    dlg.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     dlg.setIcon(QMessageBox.Icon.Critical)
     
     if hasattr(exception, 'message') and hasattr(exception, 'code'):
@@ -18,6 +19,7 @@ def show_error_dialog(parent, exception):
 
 def create_loading_dialog(parent, title="در حال بارگذاری..."):
     dlg = QProgressDialog(title, None, 0, 0, parent)
+    dlg.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
     dlg.setWindowModality(Qt.WindowModality.WindowModal)
     dlg.setWindowTitle("لطفاً منتظر بمانید")
     dlg.setMinimumDuration(0)

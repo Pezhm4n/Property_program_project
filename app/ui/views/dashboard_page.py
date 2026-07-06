@@ -29,22 +29,10 @@ class DashboardPage(QWidget):
         # Header Layout
         header_layout = QHBoxLayout()
         self.btn_refresh = QPushButton("🔄 بروزرسانی داشبورد")
-        self.btn_refresh.setStyleSheet("""
-            QPushButton {
-                background-color: #0E7490;
-                color: white;
-                font-weight: bold;
-                border-radius: 4px;
-                padding: 6px 12px;
-            }
-            QPushButton:hover {
-                background-color: #0891B2;
-            }
-        """)
         self.btn_refresh.clicked.connect(self.refresh_data)
         
         title_lbl = QLabel("داشبورد مدیریت املاک")
-        title_lbl.setStyleSheet("color: white; font-size: 20px; font-weight: bold;")
+        title_lbl.setObjectName("dashboardTitle")
         title_lbl.setAlignment(Qt.AlignmentFlag.AlignRight)
         
         header_layout.addWidget(self.btn_refresh)

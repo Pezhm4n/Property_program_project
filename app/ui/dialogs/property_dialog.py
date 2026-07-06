@@ -8,14 +8,20 @@ from re_bridge.models import PropertyDTO
 class PropertyDialog(QDialog):
     def __init__(self, parent=None, property_dto=None):
         super().__init__(parent)
+        self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle("ثبت / ویرایش ملک")
-        self.resize(400, 550)
+        self.resize(420, 580)
         self.property_id = None
         self.is_archived = False
         self.original_dto = property_dto
         
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(16)
+        
         form = QFormLayout()
+        form.setSpacing(12)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         
         self.cmb_category = QComboBox()
         self.cmb_category.addItems(["مسکونی", "تجاری", "زمین"])

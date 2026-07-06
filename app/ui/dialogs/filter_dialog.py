@@ -8,11 +8,17 @@ from re_bridge.models import SearchState
 class FilterDialog(QDialog):
     def __init__(self, parent=None, current_filters=None):
         super().__init__(parent)
+        self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle("فیلتر پیشرفته")
-        self.resize(350, 400)
+        self.resize(380, 440)
         
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(16)
+        
         form = QFormLayout()
+        form.setSpacing(12)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         
         self.cmb_category = QComboBox()
         self.cmb_category.addItems(["همه", "مسکونی", "تجاری", "زمین"])

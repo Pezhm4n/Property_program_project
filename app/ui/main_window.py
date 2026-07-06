@@ -16,10 +16,19 @@ class MainWindow(BaseWindow):
         central_widget = QWidget()
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+        
+        # Sidebar layout container to set modern margins
+        sidebar_container = QWidget()
+        sidebar_container.setObjectName("sidebarContainer")
+        sidebar_layout = QVBoxLayout(sidebar_container)
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        sidebar_layout.setSpacing(0)
         
         # Sidebar
         self.sidebar = QListWidget()
-        self.sidebar.setMaximumWidth(200)
+        self.sidebar.setObjectName("sidebarWidget")
+        self.sidebar.setMaximumWidth(220)
         self.sidebar.addItem("🏠 داشبورد")
         self.sidebar.addItem("🏘 املاک")
         self.sidebar.addItem("📊 گزارش‌ها")
@@ -27,11 +36,11 @@ class MainWindow(BaseWindow):
         item_settings = QListWidgetItem("⚙ تنظیمات")
         item_settings.setFlags(item_settings.flags() & ~Qt.ItemFlag.ItemIsEnabled)
         self.sidebar.addItem(item_settings)
-        
-        self.sidebar.currentRowChanged.connect(self.switch_tab)
+        sidebar_layout.addWidget(self.sidebar)
         
         # Content Area
         self.content_stack = QStackedWidget()
+        self.content_stack.setContentsMargins(16, 16, 16, 16)
         
         # Dashboard Page
         self.dashboard_page = DashboardPage(self.nav_manager.session)
@@ -45,7 +54,7 @@ class MainWindow(BaseWindow):
         self.reports_page = ReportsPage(self.nav_manager.session)
         self.content_stack.addWidget(self.reports_page)
         
-        main_layout.addWidget(self.sidebar)
+        main_layout.addWidget(sidebar_container)
         main_layout.addWidget(self.content_stack)
         
         self.setCentralWidget(central_widget)
@@ -56,39 +65,62 @@ class MainWindow(BaseWindow):
         self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.addToolBar(self.toolbar)
         
-        act_add = self.toolbar.addAction("➕ افزودن")
-        act_add.triggered.connect(self.property_view.add_property)
+        self.act_add = self.toolbar.addAction("➕ افزودن")
+        self.act_add.triggered.connect(self.property_view.add_property)
         
-        act_edit = self.toolbar.addAction("✏️ ویرایش")
-        act_edit.triggered.connect(self.property_view.edit_property)
+        self.act_edit = self.toolbar.addAction("✏️ ویرایش")
+        self.act_edit.triggered.connect(self.property_view.edit_property)
         
-        act_archive = self.toolbar.addAction("📁 آرشیو")
-        act_archive.triggered.connect(self.property_view.archive_property)
+        self.act_archive = self.toolbar.addAction("📁 آرشیو")
+        self.act_archive.triggered.connect(self.property_view.archive_property)
         
-        act_restore = self.toolbar.addAction("♻️ بازیابی")
-        act_restore.triggered.connect(self.property_view.restore_property)
+        self.act_restore = self.toolbar.addAction("♻️ بازیابی")
+        self.act_restore.triggered.connect(self.property_view.restore_property)
+        
+        self.toolbar_sep1 = self.toolbar.addSeparator()
+        self.act_refresh = self.toolbar.addAction("🔄 بروزرسانی")
+        
+        self.toolbar_sep2 = self.toolbar.addSeparator()
+        self.act_theme = self.toolbar.addAction("🌓 تغییر تم")
+        self.act_theme.triggered.connect(self.toggle_theme)
         
         self.toolbar.addSeparator()
-        act_refresh = self.toolbar.addAction("🔄 بروزرسانی")
-        act_refresh.triggered.connect(self.property_view.refresh_data)
-        
-        self.toolbar.addSeparator()
-        act_logout = self.toolbar.addAction("🚪 خروج")
-        act_logout.triggered.connect(self.handle_logout)
+        self.act_logout = self.toolbar.addAction("🚪 خروج")
+        self.act_logout.triggered.connect(self.handle_logout)
         
         # Status Bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.update_status_bar()
         
+        # Sidebar signals
+        self.sidebar.currentRowChanged.connect(self.switch_tab)
+        
         # Load default tab
         self.sidebar.setCurrentRow(0) # Dashboard tab
 
     def switch_tab(self, index):
         self.content_stack.setCurrentIndex(index)
+        
+        is_property_tab = (index == 1)
+        self.act_add.setVisible(is_property_tab)
+        self.act_edit.setVisible(is_property_tab)
+        self.act_archive.setVisible(is_property_tab)
+        self.act_restore.setVisible(is_property_tab)
+        
+        self.act_refresh.setVisible(index in (0, 1))
+        
+        # Reconnect refresh button dynamically to current page
+        try:
+            self.act_refresh.triggered.disconnect()
+        except Exception:
+            pass
+            
         if index == 0:
+            self.act_refresh.triggered.connect(self.dashboard_page.refresh_data)
             self.dashboard_page.refresh_data()
         elif index == 1:
+            self.act_refresh.triggered.connect(self.property_view.refresh_data)
             self.property_view.refresh_data()
             
     def update_status_bar(self):
@@ -98,3 +130,13 @@ class MainWindow(BaseWindow):
     def handle_logout(self):
         self.nav_manager.session.clear_session()
         self.nav_manager.show_login()
+
+    def toggle_theme(self):
+        from PySide6.QtWidgets import QApplication
+        from core.theme_manager import ThemeManager
+        
+        new_theme = "light" if self.nav_manager.session.theme == "dark" else "dark"
+        self.nav_manager.session.set_theme(new_theme)
+        
+        theme_manager = ThemeManager()
+        theme_manager.apply_theme(QApplication.instance(), new_theme)

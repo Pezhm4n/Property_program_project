@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QWidget
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPainter, QColor, QPen, QBrush, QLinearGradient
+from PySide6.QtGui import QPainter, QColor, QPen, QBrush, QLinearGradient, QPainterPath
 
 class SkeletonChart(QWidget):
     def __init__(self, chart_type="bar", parent=None):
@@ -23,7 +23,7 @@ class SkeletonChart(QWidget):
         height = self.height()
         
         # Background Grid Lines
-        grid_pen = QPen(QColor("#3F3F46"), 1, Qt.PenStyle.DashLine)
+        grid_pen = QPen(QColor("#334155") if self.palette().window().color().value() < 128 else QColor("#cbd5e1"), 1, Qt.PenStyle.DashLine)
         painter.setPen(grid_pen)
         for i in range(1, 5):
             y = int(height * (i / 5))
@@ -52,16 +52,17 @@ class SkeletonChart(QWidget):
             
             # Gradient fill for bar
             gradient = QLinearGradient(x, y, x, height - 20)
-            gradient.setColorAt(0.0, QColor("#3B82F6")) # Sleek Blue
-            gradient.setColorAt(1.0, QColor("#1D4ED8"))
+            gradient.setColorAt(0.0, QColor("#38bdf8")) # Sleek Light Blue
+            gradient.setColorAt(1.0, QColor("#0284c7")) # Deep Blue
             
             painter.setBrush(QBrush(gradient))
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(x, y, bar_width, bar_height, 4, 4)
+            painter.drawRoundedRect(x, y, bar_width, bar_height, 6, 6)
             
             # Draw values
-            painter.setPen(QColor("#D4D4D8"))
-            painter.drawText(x, height - 5, f"{val}")
+            text_color = QColor("#f8fafc") if self.palette().window().color().value() < 128 else QColor("#0f172a")
+            painter.setPen(text_color)
+            painter.drawText(x + (bar_width / 4), height - 5, f"{val}")
             
     def draw_line_chart(self, painter, width, height):
         if not self.data:
@@ -79,11 +80,34 @@ class SkeletonChart(QWidget):
             y = height - ((val / max_val) * (height - 40)) - 20
             points.append(QPointF(x, y))
             
-        # Draw line path
-        pen = QPen(QColor("#10B981"), 3, Qt.PenStyle.SolidLine) # Green
-        painter.setPen(pen)
-        for i in range(len(points) - 1):
-            painter.drawLine(points[i], points[i+1])
+        # Draw dynamic Bezier path
+        path = QPainterPath()
+        if points:
+            path.moveTo(points[0])
+            for i in range(len(points) - 1):
+                p1 = points[i]
+                p2 = points[i+1]
+                # Control points for smooth bezier spline
+                cp1 = QPointF(p1.x() + spacing / 2.0, p1.y())
+                cp2 = QPointF(p2.x() - spacing / 2.0, p2.y())
+                path.cubicTo(cp1, cp2, p2)
+                
+            # Create a closed path to draw a gradient fill underneath the curve
+            fill_path = QPainterPath(path)
+            fill_path.lineTo(points[-1].x(), height - 20)
+            fill_path.lineTo(points[0].x(), height - 20)
+            fill_path.closeSubpath()
+            
+            # Gradient fill under line chart
+            fill_gradient = QLinearGradient(0, 0, 0, height)
+            fill_gradient.setColorAt(0.0, QColor(16, 185, 129, 80)) # Emerald translucent
+            fill_gradient.setColorAt(1.0, QColor(16, 185, 129, 0)) # Emerald transparent
+            painter.fillPath(fill_path, QBrush(fill_gradient))
+            
+            # Draw the main line path on top of the fill
+            pen = QPen(QColor("#10B981"), 3, Qt.PenStyle.SolidLine)
+            painter.setPen(pen)
+            painter.drawPath(path)
             
         # Draw points
         painter.setBrush(QBrush(QColor("#FFFFFF")))
@@ -95,20 +119,13 @@ class ChartWidget(QFrame):
     def __init__(self, title: str, chart_type="bar", parent=None):
         super().__init__(parent)
         self.setObjectName("ChartWidget")
-        self.setStyleSheet("""
-            #ChartWidget {
-                background-color: #2D2D30;
-                border: 1px solid #3F3F46;
-                border-radius: 8px;
-                padding: 12px;
-            }
-        """)
         
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
         
         # Title
         self.lbl_title = QLabel(title)
-        self.lbl_title.setStyleSheet("color: #FFFFFF; font-size: 14px; font-weight: bold; margin-bottom: 8px;")
+        self.lbl_title.setObjectName("chartTitle")
         self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignRight)
         layout.addWidget(self.lbl_title)
         

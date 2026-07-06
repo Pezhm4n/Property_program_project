@@ -51,6 +51,9 @@ class PropertyListView(QWidget):
         self.table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._show_context_menu)
+        self.table.doubleClicked.connect(self.edit_property)
         
         # Stateless sorting logic via header click
         self.table.horizontalHeader().setSortIndicatorShown(True)
@@ -216,3 +219,28 @@ class PropertyListView(QWidget):
             self.refresh_data()
         except Exception as e:
             show_error_dialog(self, e)
+
+    def _show_context_menu(self, pos):
+        prop = self.get_selected_property()
+        if not prop:
+            return
+            
+        from PySide6.QtGui import QAction, QCursor
+        from PySide6.QtWidgets import QMenu
+        
+        menu = QMenu(self)
+        
+        act_edit = QAction("✏ ویرایش ملک", self)
+        act_edit.triggered.connect(self.edit_property)
+        
+        if prop.is_archived:
+            act_archive = QAction("📂 خروج از بایگانی", self)
+            act_archive.triggered.connect(self.restore_property)
+        else:
+            act_archive = QAction("📁 بایگانی کردن", self)
+            act_archive.triggered.connect(self.archive_property)
+            
+        menu.addAction(act_edit)
+        menu.addAction(act_archive)
+        
+        menu.exec(QCursor.pos())
