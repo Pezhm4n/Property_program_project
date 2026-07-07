@@ -86,6 +86,11 @@ class LoginWindow(BaseWindow):
         root_layout.addStretch()
         
         self.setCentralWidget(root_widget)
+        
+        # Enter key triggers login
+        self.txt_username.returnPressed.connect(self.handle_login)
+        self.txt_password.returnPressed.connect(self.handle_login)
+        
         self._load_saved_credentials()
 
     def toggle_password_visibility(self, state):
@@ -99,6 +104,9 @@ class LoginWindow(BaseWindow):
         if saved_user:
             self.txt_username.setText(saved_user)
             self.chk_remember.setChecked(True)
+            self.txt_password.setFocus()
+        else:
+            self.txt_username.setFocus()
 
     def handle_login(self):
         user = self.txt_username.text().strip()

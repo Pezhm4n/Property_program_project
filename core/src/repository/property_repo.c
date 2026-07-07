@@ -157,10 +157,15 @@ int property_repo_restore(int id) {
     }
     return 0;
 }
-
-int property_repo_get_all(const char* search_query, const char* category, const char* listing_type, const char* city, int district, int min_price, int max_price, int min_area, int max_area, const char* sort_col, int sort_asc, int limit, int offset, Property* out_props, int max_props, int* out_count) {
+int property_repo_get_all(const char* search_query, const char* category, const char* listing_type, const char* city, int district, int min_price, int max_price, int min_area, int max_area, int is_archived_filter, const char* sort_col, int sort_asc, int limit, int offset, Property* out_props, int max_props, int* out_count) {
     char sql[2048] = "SELECT id, is_archived, category, listing_type, city, municipal_district, address, owner_phone, area_sqm, sale_price, rent_deposit, rent_monthly, created_by, created_at, archived_at, archived_by FROM properties WHERE 1=1";
     
+    if (is_archived_filter == 0) {
+        strcat(sql, " AND is_archived = 0");
+    } else if (is_archived_filter == 1) {
+        strcat(sql, " AND is_archived = 1");
+    }
+
     if (search_query && strlen(search_query) > 0) {
         strcat(sql, " AND (address LIKE ? OR owner_phone LIKE ? OR category LIKE ?)");
     }

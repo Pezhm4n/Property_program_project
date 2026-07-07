@@ -50,7 +50,7 @@ class SearchState:
     
     def __post_init__(self):
         if self.filters is None:
-            self.filters = {}
+            self.filters = {"is_archived": False}
         if self.sorting is None:
             self.sorting = SortingDTO()
         if self.pagination is None:

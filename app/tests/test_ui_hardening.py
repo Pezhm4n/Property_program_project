@@ -76,9 +76,78 @@ def test_backup_restore_integrity_check(tmp_path):
     # Create a corrupted mock backup file (plain text instead of SQLite database)
     bad_backup_path = tmp_path / "corrupted_backup.db"
     bad_backup_path.write_text("THIS IS NOT A SQLITE DATABASE FILE")
-    
+
     # Restoring from this file should raise a ValueError
     from re_bridge.services import BackupService
     with pytest.raises(ValueError) as excinfo:
         BackupService.restore_backup("test_token", str(bad_backup_path))
     assert "اعتبارسنجی بکاپ با خطا مواجه شد" in str(excinfo.value)
+
+def test_property_archive_restore_search_filtering():
+    # 1. Create a dynamic test admin
+    AuthService.create_initial_admin("test_user_filtering", "password123")
+    
+    # 2. Login to get token
+    from re_bridge.models import LoginRequest
+    resp = AuthService.login(LoginRequest(username="test_user_filtering", password="password123"))
+    token = resp.token
+    
+    # 3. Create properties DTO
+    from re_bridge.models import PropertyDTO, SearchState
+    from re_bridge.services import PropertyService
+    
+    prop_dto = PropertyDTO(
+        id=0,
+        is_archived=False,
+        category="مسکونی",
+        listing_type="فروش",
+        city="تهران",
+        municipal_district=5,
+        address="خیابان کاشانی",
+        owner_phone="09121111111",
+        area_sqm=85,
+        sale_price=5000000,
+        rent_deposit=0,
+        rent_monthly=0,
+        date_registered=""
+    )
+    
+
+    
+    # Create the property
+    success = PropertyService.create_property(token, prop_dto)
+    assert success.get("id") == 1
+    # Search properties (default: active only)
+    search_state = SearchState()
+    properties = PropertyService.get_properties(token, search_state)
+    assert len(properties) == 1
+    assert properties[0].is_archived is False
+    
+    # Archive the property
+    prop_id = properties[0].id
+    PropertyService.archive_property(token, prop_id)
+    
+    # Search properties (default: active only) should return 0 items!
+    properties = PropertyService.get_properties(token, search_state)
+    assert len(properties) == 0
+    
+    # Search properties with is_archived = True filter
+    search_state.filters = {"is_archived": True}
+    properties = PropertyService.get_properties(token, search_state)
+    assert len(properties) == 1
+    assert properties[0].id == prop_id
+    assert properties[0].is_archived is True
+    
+    # Search properties with is_archived = None or omitted (status "All")
+    search_state.filters = {}
+    properties = PropertyService.get_properties(token, search_state)
+    assert len(properties) == 1
+    
+    # Restore the property
+    PropertyService.restore_property(token, prop_id)
+    
+    # Search properties (default: active only) should return 1 item again!
+    search_state.filters = {"is_archived": False}
+    properties = PropertyService.get_properties(token, search_state)
+    assert len(properties) == 1
+    assert properties[0].is_archived is False

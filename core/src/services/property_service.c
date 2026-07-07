@@ -62,6 +62,19 @@ static int map_json_to_property(cJSON* prop_obj, Property* p) {
     p->rent_deposit = rent_d ? rent_d->valueint : 0;
     p->rent_monthly = rent_m ? rent_m->valueint : 0;
 
+    // Additional validations
+    if (p->area_sqm <= 0) return RE_ERR_VALIDATION;
+    if (p->municipal_district < 1 || p->municipal_district > 22) return RE_ERR_VALIDATION;
+    
+    if (strcmp(p->listing_type, "فروش") == 0 || strcmp(p->listing_type, "sale") == 0) {
+        if (p->sale_price <= 0) return RE_ERR_VALIDATION;
+        p->rent_deposit = 0;
+        p->rent_monthly = 0;
+    } else if (strcmp(p->listing_type, "اجاره") == 0 || strcmp(p->listing_type, "rent") == 0 || strcmp(p->listing_type, "رهن") == 0) {
+        if (p->rent_deposit <= 0 && p->rent_monthly <= 0) return RE_ERR_VALIDATION;
+        p->sale_price = 0;
+    }
+
     return 0;
 }
 
@@ -181,6 +194,7 @@ int property_get_all(const char* req, char** res) {
     const char* city = NULL;
     int district = 0;
     int min_price = 0, max_price = 0, min_area = 0, max_area = 0;
+    int is_archived_filter = 0; // Default: show active only
     const char* sort_col = NULL;
     int sort_asc = 0;
     int limit = 0, offset = 0;
@@ -207,6 +221,13 @@ int property_get_all(const char* req, char** res) {
             if (min_a) min_area = min_a->valueint;
             cJSON* max_a = cJSON_GetObjectItem(filters, "max_area");
             if (max_a) max_area = max_a->valueint;
+            
+            cJSON* arch = cJSON_GetObjectItem(filters, "is_archived");
+            if (arch) {
+                is_archived_filter = cJSON_IsTrue(arch) ? 1 : 0;
+            } else {
+                is_archived_filter = -1; // Omitted means Show all
+            }
         }
         
         cJSON* sorting = cJSON_GetObjectItem(state, "sorting");
@@ -234,7 +255,7 @@ int property_get_all(const char* req, char** res) {
     memset(props, 0, sizeof(props));
     int count = 0;
     
-    int rc = property_repo_get_all(query, category, listing_type, city, district, min_price, max_price, min_area, max_area, sort_col, sort_asc, limit, offset, props, 200, &count);
+    int rc = property_repo_get_all(query, category, listing_type, city, district, min_price, max_price, min_area, max_area, is_archived_filter, sort_col, sort_asc, limit, offset, props, 200, &count);
     cJSON_Delete(root);
     
     if (rc != 0) return rc;

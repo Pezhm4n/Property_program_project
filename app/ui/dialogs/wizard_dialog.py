@@ -68,6 +68,14 @@ class WizardDialog(QDialog):
         self.btn_submit.clicked.connect(self.submit_wizard)
         layout.addWidget(self.btn_submit)
         
+        # Enter key triggers submit
+        self.txt_username.returnPressed.connect(self.submit_wizard)
+        self.txt_password.returnPressed.connect(self.submit_wizard)
+        self.txt_confirm.returnPressed.connect(self.submit_wizard)
+        
+        # Focus on password field since username defaults to "admin"
+        self.txt_password.setFocus()
+        
     def submit_wizard(self):
         username = self.txt_username.text().strip()
         password = self.txt_password.text()

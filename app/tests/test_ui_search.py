@@ -7,8 +7,9 @@ from re_bridge.models import SearchState, PaginationDTO, SortingDTO
 
 def test_search_state_initialization():
     state = SearchState()
+
     assert state.query == ""
-    assert state.filters == {}
+    assert state.filters == {"is_archived": False}
     assert state.pagination.page_number == 1
     assert state.pagination.page_size == 20
     assert state.sorting.column == "date_registered"

@@ -63,6 +63,14 @@ class ChangePasswordDialog(QDialog):
         self.btn_submit.clicked.connect(self.submit_change)
         layout.addWidget(self.btn_submit)
         
+        # Enter key triggers submit
+        self.txt_current.returnPressed.connect(self.submit_change)
+        self.txt_new.returnPressed.connect(self.submit_change)
+        self.txt_confirm.returnPressed.connect(self.submit_change)
+        
+        # Initial focus
+        self.txt_current.setFocus()
+        
     def submit_change(self):
         current_pw = self.txt_current.text()
         new_pw = self.txt_new.text()

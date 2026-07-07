@@ -73,6 +73,9 @@ class PropertyDialog(QDialog):
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)
         
+        # Initial focus UX
+        self.txt_address.setFocus()
+        
         if property_dto:
             self._load_dto(property_dto)
             
@@ -90,6 +93,45 @@ class PropertyDialog(QDialog):
         self.spn_deposit.setValue(dto.rent_deposit)
         self.spn_rent.setValue(dto.rent_monthly)
         
+    def accept(self):
+        # 1. Strip input strings
+        city = self.txt_city.text().strip()
+        address = self.txt_address.text().strip()
+        phone = self.txt_phone.text().strip()
+        
+        # Update text widgets
+        self.txt_city.setText(city)
+        self.txt_address.setText(address)
+        self.txt_phone.setText(phone)
+        
+        # 2. Check for empty fields
+        from ui.dialogs import show_error_dialog
+        if not city:
+            show_error_dialog(self, ValueError("لطفاً نام شهر را وارد کنید."))
+            return
+        if not address:
+            show_error_dialog(self, ValueError("لطفاً آدرس ملک را وارد کنید."))
+            return
+        if not phone:
+            show_error_dialog(self, ValueError("لطفاً شماره تماس مالک را وارد کنید."))
+            return
+            
+        # 3. Validate phone format (starts with 09, 11 digits)
+        if len(phone) != 11 or not phone.startswith("09") or not phone.isdigit():
+            show_error_dialog(self, ValueError("شماره تماس معتبر نیست. باید ۱۱ رقم بوده و با ۰۹ شروع شود."))
+            return
+            
+        # 4. Check listing pricing rules
+        ltype = self.cmb_listing_type.currentText()
+        if ltype == "فروش" and self.spn_sale.value() <= 0:
+            show_error_dialog(self, ValueError("برای آگهی فروش، قیمت فروش باید بیشتر از صفر باشد."))
+            return
+        if (ltype == "اجاره" or ltype == "رهن") and (self.spn_deposit.value() <= 0 and self.spn_rent.value() <= 0):
+            show_error_dialog(self, ValueError("برای آگهی رهن/اجاره، مبلغ رهن یا اجاره باید بیشتر از صفر باشد."))
+            return
+            
+        super().accept()
+
     def get_dto(self) -> PropertyDTO:
         return PropertyDTO(
             id=self.property_id or 0,
