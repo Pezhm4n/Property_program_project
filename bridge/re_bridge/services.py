@@ -112,24 +112,25 @@ class ReportService:
         import arabic_reshaper
         from bidi.algorithm import get_display
         
-        # Register Tahoma font for Persian/Arabic character rendering support
-        font_path = r"C:\Windows\Fonts\tahoma.ttf"
-        font_bold_path = r"C:\Windows\Fonts\tahomabd.ttf"
+        # Register Vazirmatn font for Persian/Arabic character rendering support
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        font_path = os.path.join(base_dir, 'assets', 'fonts', 'Vazirmatn-Regular.ttf')
+        font_bold_path = os.path.join(base_dir, 'assets', 'fonts', 'Vazirmatn-Bold.ttf')
         
         has_font = False
         if os.path.exists(font_path):
             try:
-                pdfmetrics.registerFont(TTFont('Tahoma', font_path))
+                pdfmetrics.registerFont(TTFont('Vazirmatn', font_path))
                 if os.path.exists(font_bold_path):
-                    pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_bold_path))
+                    pdfmetrics.registerFont(TTFont('Vazirmatn-Bold', font_bold_path))
                 else:
-                    pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_path))
+                    pdfmetrics.registerFont(TTFont('Vazirmatn-Bold', font_path))
                 has_font = True
             except Exception:
                 pass
                 
-        font_name = 'Tahoma' if has_font else 'Helvetica'
-        font_bold_name = 'Tahoma-Bold' if has_font else 'Helvetica-Bold'
+        font_name = 'Vazirmatn' if has_font else 'Helvetica'
+        font_bold_name = 'Vazirmatn-Bold' if has_font else 'Helvetica-Bold'
         
         def reshape_text(text: str) -> str:
             if not text:
@@ -266,7 +267,7 @@ class ReportService:
         # Styles formatting
         header_format = workbook.add_format({
             'bold': True,
-            'font_name': 'Tahoma',
+            'font_name': 'Vazirmatn',
             'font_size': 11,
             'font_color': 'white',
             'bg_color': '#1e293b',
@@ -276,7 +277,7 @@ class ReportService:
         })
         
         cell_format = workbook.add_format({
-            'font_name': 'Tahoma',
+            'font_name': 'Vazirmatn',
             'font_size': 10,
             'border': 1,
             'align': 'center',
