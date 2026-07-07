@@ -5,11 +5,12 @@
  */
 #ifndef SERVICES_H
 #define SERVICES_H
-
 int auth_login(const char* req, char** res);
 int auth_logout(const char* req, char** res);
 int auth_validate_session(const char* req, char** res);
-
+int auth_has_any_user(const char* req, char** res);
+int auth_create_initial_admin(const char* req, char** res);
+int auth_change_password(const char* req, char** res);
 int property_create(const char* req, char** res);
 int property_update(const char* req, char** res);
 int property_get_all(const char* req, char** res);

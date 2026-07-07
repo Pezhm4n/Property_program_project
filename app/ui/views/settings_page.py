@@ -27,8 +27,13 @@ class SettingsPage(QWidget):
         self.cmb_theme = QComboBox()
         self.cmb_theme.addItems(["تیره", "روشن"])
         self.cmb_theme.setCurrentText("تیره" if self.session.theme == "dark" else "روشن")
-        
         form.addRow("پوسته برنامه:", self.cmb_theme)
+        # Password Section
+        self.btn_change_password = QPushButton("تغییر رمز عبور")
+        self.btn_change_password.setFixedWidth(150)
+        self.btn_change_password.clicked.connect(self.show_change_password_dialog)
+        form.addRow("امنیت حساب:", self.btn_change_password)
+        
         layout.addLayout(form)
         
         # Save Button
@@ -50,3 +55,8 @@ class SettingsPage(QWidget):
             from core.theme_manager import ThemeManager
             theme_manager = ThemeManager()
             theme_manager.apply_theme(QApplication.instance(), new_theme)
+
+    def show_change_password_dialog(self):
+        from ui.dialogs.change_password_dialog import ChangePasswordDialog
+        dlg = ChangePasswordDialog(self.session.username, self)
+        dlg.exec()

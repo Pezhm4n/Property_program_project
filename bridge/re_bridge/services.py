@@ -41,6 +41,33 @@ class AuthService:
         rc, _ = call_dll_endpoint('re_logout', req_json)
         check_error(rc)
 
+    @staticmethod
+    def has_any_user() -> bool:
+        rc, res_json = call_dll_endpoint('re_has_any_user', '{}')
+        check_error(rc)
+        data = json.loads(res_json)
+        return data.get('has_users', False)
+        
+    @staticmethod
+    def create_initial_admin(username, password) -> bool:
+        req_json = json.dumps({"username": username, "password": password})
+        rc, res_json = call_dll_endpoint('re_create_initial_admin', req_json)
+        check_error(rc)
+        data = json.loads(res_json)
+        return data.get('status') == 'created'
+
+    @staticmethod
+    def change_password(username, current_password, new_password) -> bool:
+        req_json = json.dumps({
+            "username": username,
+            "current_password": current_password,
+            "new_password": new_password
+        })
+        rc, res_json = call_dll_endpoint('re_change_password', req_json)
+        check_error(rc)
+        data = json.loads(res_json)
+        return data.get('status') == 'success'
+
 class PropertyService:
     @staticmethod
     def create_property(token: str, prop: PropertyDTO) -> dict:

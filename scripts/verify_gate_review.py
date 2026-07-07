@@ -39,12 +39,13 @@ def run_gate_review():
     except Exception as e:
         print(f" -> [FAIL] Failed to load DLL/init DB: {e}")
         return
-
     # Gate 3: Login Verification (using dynamically seeded admin)
     print("\n[Gate 3] Login Verification...")
     t0 = time.perf_counter()
     token = None
     try:
+        # Seed initial admin user first since auto-seeding has been removed
+        AuthService.create_initial_admin("admin", "password123")
         req = LoginRequest(username="admin", password="password123")
         resp = AuthService.login(req)
         token = resp.token

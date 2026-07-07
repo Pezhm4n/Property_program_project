@@ -6,10 +6,12 @@ import sqlite3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
 from re_bridge.services import PropertyService, DashboardService, BackupService, re_init, re_close
 from re_bridge.models import PropertyDTO, SearchState
-
 @pytest.fixture(autouse=True)
 def setup_test_db():
     re_init("real_estate_test.db", "core/migrations")
+    from re_bridge.services import AuthService
+    # Seed initial user so property registration foreign key succeeds
+    AuthService.create_initial_admin("admin", "password123")
     yield
     re_close()
     if os.path.exists("real_estate_test.db"):
@@ -17,7 +19,6 @@ def setup_test_db():
             os.remove("real_estate_test.db")
         except Exception:
             pass
-
 def test_commission_and_tax_calculation():
     token = "test_token"
     

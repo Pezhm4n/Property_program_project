@@ -29,11 +29,10 @@ def main():
     # Initialize Theme
     theme_manager = ThemeManager()
     theme_manager.apply_theme(app, nav.session.theme)
-    
     # Initialize Core DLL Database and Migrations
     from re_bridge.services import re_init, re_close
-    re_init("real_estate.db", "core/migrations")
-    
+    db_path = nav.session.get_db_path()
+    re_init(db_path, "core/migrations")
     nav.show_login()
     
     try:

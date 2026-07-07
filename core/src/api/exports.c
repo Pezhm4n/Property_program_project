@@ -30,25 +30,6 @@ RE_API void re_free_string(char* str) {
         free(str);
     }
 }
-
-static void seed_default_admin_if_needed() {
-    sqlite3_stmt* stmt = NULL;
-    int rc = db_prepare("SELECT COUNT(*) FROM users WHERE username = 'admin';", &stmt);
-    int count = 0;
-    if (rc == 0) {
-        if (sqlite3_step(stmt) == SQLITE_ROW) {
-            count = sqlite3_column_int(stmt, 0);
-        }
-        sqlite3_finalize(stmt);
-    }
-    if (count == 0) {
-        db_execute(
-            "INSERT INTO users (username, password_hash, first_name, last_name, national_id, phone, role, created_at) "
-            "VALUES ('admin', 'password123', 'مدیر', 'سیستم', '0012345678', '09123456789', 'admin', datetime('now'));"
-        );
-    }
-}
-
 RE_API int re_initialize(const char* db_path, const char* migrations_path) {
     int rc = db_init(db_path, 5000);
     if (rc != 0) {
@@ -60,10 +41,8 @@ RE_API int re_initialize(const char* db_path, const char* migrations_path) {
         last_error = rc;
         return rc;
     }
-    seed_default_admin_if_needed();
     return 0;
 }
-
 RE_API void re_shutdown() {
     db_close();
 }
@@ -148,4 +127,22 @@ RE_API int re_ping(const char* request_json, char** response_json_out) {
     strcpy(resp, "{\"status\":\"ok\"}");
     *response_json_out = resp;
     return 0;
+}
+
+RE_API int re_has_any_user(const char* request_json, char** response_json_out) {
+    int rc = auth_has_any_user(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_create_initial_admin(const char* request_json, char** response_json_out) {
+    int rc = auth_create_initial_admin(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_change_password(const char* request_json, char** response_json_out) {
+    int rc = auth_change_password(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
 }

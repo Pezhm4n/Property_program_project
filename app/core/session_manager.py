@@ -81,6 +81,43 @@ class SessionManager:
             self.username = saved_user
             self.remember_me = True
 
-    def start_timeout_timer(self):
-        # @todo Skeleton for session timeout handling
-        pass
+    def get_db_path(self) -> str:
+        env_path = os.getenv("DB_PATH")
+        if env_path:
+            return env_path
+        saved_path = self.storage.load("db_path")
+        if saved_path:
+            return saved_path
+        return "real_estate.db"
+
+    def get_session_timeout(self) -> int:
+        val = self.storage.load("session_timeout_minutes")
+        try:
+            return int(val) if val else 15
+        except Exception:
+            return 15
+
+    def get_window_size(self) -> tuple[int, int]:
+        w = self.storage.load("window_width")
+        h = self.storage.load("window_height")
+        try:
+            return (int(w) if w else 1100, int(h) if h else 700)
+        except Exception:
+            return (1100, 700)
+
+    def get_backup_directory(self) -> str:
+        saved_dir = self.storage.load("backup_dir")
+        return saved_dir if saved_dir else "backups"
+
+    def get_page_size(self) -> int:
+        val = self.storage.load("page_size")
+        try:
+            return int(val) if val else 20
+        except Exception:
+            return 20
+
+    def get_default_sorting(self) -> tuple[str, bool]:
+        col = self.storage.load("sort_column") or "date_registered"
+        asc = self.storage.load("sort_ascending")
+        is_asc = (str(asc).lower() == "true") if asc else False
+        return col, is_asc

@@ -22,6 +22,32 @@ class SkeletonChart(QWidget):
         width = self.width()
         height = self.height()
         
+        is_empty = not self.data or all(v == 0 for v in self.data)
+        if is_empty:
+            text_color = QColor("#64748b")
+            painter.setPen(text_color)
+            painter.setFont(self.font())
+            
+            from bidi.algorithm import get_display
+            import arabic_reshaper
+            empty_text = get_display(arabic_reshaper.reshape("داده‌ای برای نمایش وجود ندارد."))
+            
+            rect = painter.fontMetrics().boundingRect(empty_text)
+            text_width = rect.width()
+            text_height = rect.height()
+            painter.drawText(int((width - text_width) / 2), int((height - text_height) / 2) + 15, empty_text)
+            
+            icon = "📊"
+            font_icon = self.font()
+            font_icon.setPointSize(24)
+            painter.setFont(font_icon)
+            icon_text = get_display(arabic_reshaper.reshape(icon))
+            icon_rect = painter.fontMetrics().boundingRect(icon_text)
+            icon_w = icon_rect.width()
+            icon_h = icon_rect.height()
+            painter.drawText(int((width - icon_w) / 2), int((height - icon_h) / 2) - 15, icon_text)
+            return
+            
         # Background Grid Lines
         grid_pen = QPen(QColor("#334155") if self.palette().window().color().value() < 128 else QColor("#cbd5e1"), 1, Qt.PenStyle.DashLine)
         painter.setPen(grid_pen)
@@ -36,7 +62,7 @@ class SkeletonChart(QWidget):
             
     def draw_bar_chart(self, painter, width, height):
         if not self.data:
-            self.data = [10, 15, 8, 12, 20, 25] # default mock
+            return
             
         max_val = max(self.data) if self.data else 1
         if max_val == 0:
@@ -66,7 +92,7 @@ class SkeletonChart(QWidget):
             
     def draw_line_chart(self, painter, width, height):
         if not self.data:
-            self.data = [5, 12, 15, 8, 10, 18] # default mock
+            return
             
         max_val = max(self.data) if self.data else 1
         if max_val == 0:

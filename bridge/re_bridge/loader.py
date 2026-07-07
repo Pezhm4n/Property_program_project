@@ -56,14 +56,15 @@ def load_dll() -> ctypes.CDLL:
 
     dll.re_shutdown.argtypes = []
     dll.re_shutdown.restype = None
-    
     # Core Data & Auth Endpoints
     endpoints = [
         're_login', 're_logout', 're_validate_session',
         're_create_property', 're_update_property', 're_get_properties', 
         're_get_property', 're_archive_property', 're_restore_property',
-        're_get_report', 're_get_statistics', 're_get_dashboard', 're_ping'
+        're_get_report', 're_get_statistics', 're_get_dashboard', 're_ping',
+        're_has_any_user', 're_create_initial_admin', 're_change_password'
     ]
+
     for ep in endpoints:
         func = getattr(dll, ep)
         func.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
