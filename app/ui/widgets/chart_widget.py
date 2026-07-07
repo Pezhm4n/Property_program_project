@@ -109,11 +109,13 @@ class SkeletonChart(QWidget):
             painter.setPen(pen)
             painter.drawPath(path)
             
-        # Draw points
-        painter.setBrush(QBrush(QColor("#FFFFFF")))
-        painter.setPen(QPen(QColor("#10B981"), 2))
+        # Draw points with a themed hollow center
+        bg_val = self.palette().window().color().value()
+        bg_color = QColor("#020617") if bg_val < 128 else QColor("#FFFFFF")
+        painter.setBrush(QBrush(bg_color))
+        painter.setPen(QPen(QColor("#10B981"), 2.5))
         for pt in points:
-            painter.drawEllipse(pt, 4, 4)
+            painter.drawEllipse(pt, 4.5, 4.5)
 
 class ChartWidget(QFrame):
     def __init__(self, title: str, chart_type="bar", parent=None):

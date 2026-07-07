@@ -1,82 +1,164 @@
-/* theme_dark.qss - Premium Dark Colors */
-QMainWindow, QDialog, QFrame, QStackedWidget {
-    background-color: #0f172a;
-    color: #f8fafc;
+/* theme_dark.qss - Premium Cohesive Dark Design System */
+
+/* 1. Base Window & stacked layouts */
+QMainWindow, QDialog, QStackedWidget {
+    background-color: #020617; /* Slate-955: deepest dark background */
+    color: #f8fafc; /* Slate-50: primary text */
 }
 
+/* 2. MenuBar & Menus */
+QMenuBar {
+    background-color: #0f172a; /* Slate-900: secondary container background */
+    color: #f8fafc;
+    border-bottom: 1.5px solid #1e293b; /* Slate-800: clean separator */
+}
+QMenuBar::item {
+    background-color: transparent;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #cbd5e1; /* Slate-300 */
+}
+QMenuBar::item:selected {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+QMenu {
+    background-color: #0f172a;
+    border: 1.5px solid #1e293b;
+    border-radius: 10px;
+    padding: 6px;
+}
+QMenu::item {
+    padding: 8px 24px 8px 16px;
+    border-radius: 6px;
+    color: #cbd5e1;
+}
+QMenu::item:selected {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+QMenu::separator {
+    height: 1.5px;
+    background-color: #1e293b;
+    margin: 6px 0px;
+}
+
+/* 3. Toolbar & Status Bar */
+QToolBar {
+    background-color: #0f172a;
+    border-bottom: 1.5px solid #1e293b;
+    spacing: 10px;
+    padding: 8px;
+}
+QToolBar QToolButton {
+    background-color: transparent;
+    color: #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: bold;
+}
+QToolBar QToolButton:hover {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+QToolBar QToolButton:pressed {
+    background-color: #334155;
+    color: #f8fafc;
+}
+QToolBar::separator {
+    width: 1.5px;
+    background-color: #1e293b;
+    margin: 0px 4px;
+}
+QStatusBar {
+    background-color: #020617;
+    color: #64748b; /* Slate-500: muted text */
+    border-top: 1.5px solid #1e293b;
+    padding: 6px;
+}
+
+/* 4. Labels & Text Colors */
 QLabel, QCheckBox, QRadioButton {
     background-color: transparent;
+    color: #cbd5e1;
+}
+QLabel#dashboardTitle, QLabel#settingsHeader, QLabel#reportsHeader {
     color: #f8fafc;
+    font-size: 24px;
+    font-weight: 800;
 }
-
-QWidget#loginCard {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 16px;
-}
-
 QLabel#loginTitle {
     color: #f8fafc;
-    font-size: 22px;
-    font-weight: bold;
+    font-size: 24px;
+    font-weight: 800;
+}
+QLabel#loginSubtitle {
+    color: #64748b;
+    font-size: 13px;
 }
 
-QLabel#dashboardTitle {
-    color: #f8fafc;
-    font-size: 20px;
-    font-weight: bold;
-}
-
+/* 5. Sidebar Styling */
 QWidget#sidebarContainer {
     background-color: #0f172a;
-    border-right: 1px solid #334155;
+    border-right: 1.5px solid #1e293b;
 }
 QListWidget#sidebarWidget {
     background-color: #0f172a;
+    border: none;
+}
+QListWidget#sidebarWidget::item {
+    color: #94a3b8; /* Slate-400 */
+    border: 1px solid transparent;
+}
+QListWidget#sidebarWidget::item:hover {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+QListWidget#sidebarWidget::item:selected {
+    background-color: #0284c7; /* Sky-600 */
+    color: #ffffff;
 }
 
-QFrame#StatisticsCard {
-    background-color: #1e293b;
-    border: 1px solid #334155;
+/* 6. Card Containers with Shadows & Depth */
+QWidget#loginCard, QFrame#StatisticsCard, QFrame#ChartWidget, QFrame#RecentActivityWidget, QFrame#reportsPdfCard, QFrame#reportsExcelCard {
+    background-color: #0f172a; /* Slate-900: card base */
+    border: 1.5px solid #1e293b; /* Slate-800: card border */
     border-radius: 12px;
 }
-QFrame#StatisticsCard:hover {
-    border-color: #475569;
-    background-color: #334155;
+QWidget#loginCard:hover, QFrame#StatisticsCard:hover, QFrame#ChartWidget:hover, QFrame#RecentActivityWidget:hover, QFrame#reportsPdfCard:hover, QFrame#reportsExcelCard:hover {
+    border-color: #334155; /* Slate-700: elevation highlight */
+    background-color: #131c2e; /* Light elevation */
+}
+
+/* Statistics Card Details */
+QLabel#statIcon {
+    font-size: 24px;
 }
 QLabel#statTitle {
-    color: #94a3b8;
+    color: #94a3b8; /* Slate-400 */
     font-size: 13px;
     font-weight: bold;
 }
 QLabel#statValue {
     color: #f8fafc;
-    font-size: 26px;
-    font-weight: bold;
+    font-size: 28px;
+    font-weight: 800;
 }
 QLabel#statDesc {
-    color: #64748b;
+    color: #64748b; /* Slate-500 */
     font-size: 11px;
 }
 
-QFrame#ChartWidget {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-}
+/* Chart Widget Details */
 QLabel#chartTitle {
-    color: #f8fafc;
+    color: #cbd5e1;
     font-size: 14px;
     font-weight: bold;
 }
 
-QFrame#RecentActivityWidget {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-}
+/* Recent Activity details */
 QLabel#activityTitle {
-    color: #f8fafc;
+    color: #cbd5e1;
     font-size: 14px;
     font-weight: bold;
 }
@@ -86,146 +168,123 @@ QListWidget#activityList {
     color: #cbd5e1;
 }
 QListWidget#activityList::item {
-    border-bottom: 1px solid #334155;
-    padding: 8px;
+    border-bottom: 1px solid #1e293b;
+    padding: 10px;
 }
 QListWidget#activityList::item:hover {
-    background-color: #334155;
-    border-radius: 6px;
+    background-color: #1e293b;
+    border-radius: 8px;
     color: #f8fafc;
 }
 
+/* 7. Inputs & Fields with Recessed Depth */
 QLineEdit, QSpinBox, QComboBox {
-    background-color: #1e293b;
+    background-color: #020617; /* Dark inset background */
     color: #f8fafc;
-    border: 1px solid #334155;
+    border: 1.5px solid #1e293b;
+    border-radius: 8px;
+    padding: 8px 12px;
 }
-
+QLineEdit:hover, QSpinBox:hover, QComboBox:hover {
+    border-color: #334155;
+}
 QLineEdit:focus, QSpinBox:focus, QComboBox:focus {
-    border: 1.5px solid #0ea5e9;
+    border: 1.5px solid #38bdf8; /* sky-400 */
+    background-color: #020617;
 }
 
-QListWidget {
-    background-color: #0f172a;
-}
-QListWidget::item {
-    color: #94a3b8;
-}
-QListWidget::item:hover {
-    background-color: #1e293b;
-    color: #f8fafc;
-}
-QListWidget::item:selected {
-    background-color: #0ea5e9;
-    color: #ffffff;
-}
-
-QPushButton {
-    background-color: #0284c7;
-    color: white;
-    border: none;
-}
-QPushButton:hover {
-    background-color: #0ea5e9;
-}
-QPushButton:pressed {
-    background-color: #0369a1;
-}
-QPushButton:disabled {
-    background-color: #334155;
-    color: #94a3b8;
-}
-
+/* 8. Table Views */
 QTableView {
-    background-color: #1e293b;
-    gridline-color: #334155;
-    border: 1px solid #334155;
-    color: #f8fafc;
-    selection-background-color: rgba(14, 165, 233, 0.2);
+    background-color: #0f172a;
+    gridline-color: #1e293b;
+    border: 1.5px solid #1e293b;
+    border-radius: 12px;
+    color: #cbd5e1;
+    selection-background-color: rgba(56, 189, 248, 0.15); /* Sky-400 translucent selection */
     selection-color: #f8fafc;
 }
 QHeaderView::section {
     background-color: #0f172a;
     color: #94a3b8;
-    border-bottom: 2px solid #334155;
+    padding: 12px;
+    border: none;
+    border-bottom: 2px solid #1e293b;
+    font-weight: bold;
 }
 QTableView::item {
-    border-bottom: 1px solid #334155;
+    padding: 10px;
+    border-bottom: 1.5px solid #1e293b;
 }
 QTableView::item:hover {
-    background-color: rgba(99, 102, 241, 0.1);
+    background-color: rgba(56, 189, 248, 0.05);
 }
 
-QToolBar {
-    background-color: #1e293b;
-    border-bottom: 1px solid #334155;
-}
-QToolBar QToolButton {
-    color: #f8fafc;
-}
-QToolBar QToolButton:hover {
-    background-color: #334155;
-}
-QToolBar QToolButton:pressed {
-    background-color: #475569;
-}
-
-QStatusBar {
-    background-color: #0f172a;
-    color: #64748b;
-    border-top: 1px solid #334155;
-}
-
-QMenu {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 4px;
-}
-QMenu::item {
-    padding: 6px 20px;
-    border-radius: 4px;
-    color: #f8fafc;
-}
-QMenu::item:selected {
-    background-color: #0ea5e9;
+/* 9. Buttons styling */
+QPushButton {
+    background-color: #0284c7; /* sky-600 */
     color: #ffffff;
+    border: 1.5px solid #0369a1;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #0ea5e9; /* sky-500 */
+    border-color: #0284c7;
+}
+QPushButton:pressed {
+    background-color: #0369a1; /* sky-700 */
+    border-color: #0284c7;
+}
+QPushButton:disabled {
+    background-color: #1e293b;
+    color: #64748b;
+    border-color: #1e293b;
 }
 
-QLabel#reportsHeader {
-    color: #f8fafc;
-    font-size: 22px;
-    font-weight: bold;
-}
-QLabel#reportsDesc {
-    color: #94a3b8;
-    font-size: 13px;
-}
-QFrame#reportsPdfCard, QFrame#reportsExcelCard {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-}
-QFrame#reportsPdfCard:hover, QFrame#reportsExcelCard:hover {
-    border-color: #475569;
-}
-QLabel#reportsPdfTitle {
-    color: #38bdf8;
-    font-size: 16px;
-    font-weight: bold;
-}
-QLabel#reportsExcelTitle {
-    color: #34d399;
-    font-size: 16px;
-    font-weight: bold;
-}
-QLabel#reportsPdfDesc, QLabel#reportsExcelDesc {
-    color: #cbd5e1;
-    font-size: 12px;
-}
+/* Special button accent colors */
 QPushButton#reportsBtnPdf {
     background-color: #0284c7;
+    border-color: #0369a1;
 }
 QPushButton#reportsBtnExcel {
-    background-color: #059669;
+    background-color: #059669; /* Emerald-600 */
+    border-color: #047857;
+}
+QPushButton#reportsBtnExcel:hover {
+    background-color: #10b981;
+    border-color: #059669;
+}
+QPushButton#reportsBtnExcel:pressed {
+    background-color: #047857;
+}
+
+/* 10. Scrollbars for unified UI */
+QScrollBar:vertical {
+    border: none;
+    background: transparent;
+    width: 10px;
+    margin: 0px;
+}
+QScrollBar::handle:vertical {
+    background: #334155;
+    min-height: 20px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #475569;
+}
+QScrollBar:horizontal {
+    border: none;
+    background: transparent;
+    height: 10px;
+    margin: 0px;
+}
+QScrollBar::handle:horizontal {
+    background: #334155;
+    min-width: 20px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #475569;
 }
