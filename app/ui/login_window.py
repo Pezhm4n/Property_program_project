@@ -84,8 +84,13 @@ class LoginWindow(BaseWindow):
         root_layout.addStretch()
         root_layout.addLayout(h_layout)
         root_layout.addStretch()
-        
         self.setCentralWidget(root_widget)
+        
+        # Tab Order
+        QWidget.setTabOrder(self.txt_username, self.txt_password)
+        QWidget.setTabOrder(self.txt_password, self.chk_show_pass)
+        QWidget.setTabOrder(self.chk_show_pass, self.chk_remember)
+        QWidget.setTabOrder(self.chk_remember, self.btn_login)
         
         # Enter key triggers login
         self.txt_username.returnPressed.connect(self.handle_login)

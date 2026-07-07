@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QLabel, QMessageBox
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QLabel, QMessageBox, QWidget
 from PySide6.QtCore import Qt
 import sys
 import os
@@ -72,6 +72,11 @@ class WizardDialog(QDialog):
         self.txt_username.returnPressed.connect(self.submit_wizard)
         self.txt_password.returnPressed.connect(self.submit_wizard)
         self.txt_confirm.returnPressed.connect(self.submit_wizard)
+        
+        # Tab Order
+        QWidget.setTabOrder(self.txt_username, self.txt_password)
+        QWidget.setTabOrder(self.txt_password, self.txt_confirm)
+        QWidget.setTabOrder(self.txt_confirm, self.btn_submit)
         
         # Focus on password field since username defaults to "admin"
         self.txt_password.setFocus()

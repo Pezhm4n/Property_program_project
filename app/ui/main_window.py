@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import (QLabel, QStatusBar, QToolBar, QWidget, 
                                  QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QListWidget, QListWidgetItem)
+from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtCore import Qt, QSize
 from ui.base_window import BaseWindow
 from ui.views.property_list_view import PropertyListView
@@ -54,7 +55,6 @@ class MainWindow(BaseWindow):
         self.reports_page = ReportsPage(self.nav_manager.session)
         self.content_stack.addWidget(self.reports_page)
         
-        # Settings Page
         self.settings_page = SettingsPage(self.nav_manager.session, self)
         self.content_stack.addWidget(self.settings_page)
         

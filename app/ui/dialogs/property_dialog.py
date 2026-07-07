@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QSpinBox
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox, QDialogButtonBox, QSpinBox, QWidget
 from PySide6.QtCore import Qt
 import sys
 import os
@@ -72,6 +72,18 @@ class PropertyDialog(QDialog):
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         layout.addWidget(self.buttons)
+        
+        # Tab Order
+        QWidget.setTabOrder(self.cmb_category, self.cmb_listing_type)
+        QWidget.setTabOrder(self.cmb_listing_type, self.txt_city)
+        QWidget.setTabOrder(self.txt_city, self.spn_district)
+        QWidget.setTabOrder(self.spn_district, self.txt_address)
+        QWidget.setTabOrder(self.txt_address, self.txt_phone)
+        QWidget.setTabOrder(self.txt_phone, self.spn_area)
+        QWidget.setTabOrder(self.spn_area, self.spn_sale)
+        QWidget.setTabOrder(self.spn_sale, self.spn_deposit)
+        QWidget.setTabOrder(self.spn_deposit, self.spn_rent)
+        QWidget.setTabOrder(self.spn_rent, self.buttons)
         
         # Initial focus UX
         self.txt_address.setFocus()

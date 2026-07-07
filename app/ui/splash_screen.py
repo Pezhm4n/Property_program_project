@@ -1,5 +1,4 @@
-from PySide6.QtWidgets import QSplashScreen, QLabel
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtWidgets import QSplashScreen
 from PySide6.QtCore import Qt
 
 class SplashScreen(QSplashScreen):

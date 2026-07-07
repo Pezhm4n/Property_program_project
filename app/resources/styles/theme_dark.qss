@@ -237,6 +237,10 @@ QPushButton:hover {
     background-color: #0ea5e9; /* sky-500 */
     border-color: #0284c7;
 }
+QPushButton:focus {
+    border: 2px solid #38bdf8;
+    background-color: #0ea5e9;
+}
 QPushButton:pressed {
     background-color: #0369a1; /* sky-700 */
     border-color: #0284c7;

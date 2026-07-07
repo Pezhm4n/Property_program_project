@@ -26,12 +26,21 @@ def load_dll() -> ctypes.CDLL:
         raise InternalError(f"DLL not found at {dll_path}. Please build the core project first.")
     
     if sys.platform == 'win32' and hasattr(os, 'add_dll_directory'):
-        mingw_bin = "C:\\msys64\\mingw64\\bin"
-        if os.path.exists(mingw_bin):
+        dll_dir = os.path.dirname(dll_path)
+        if os.path.exists(dll_dir):
             try:
-                os.add_dll_directory(mingw_bin)
+                os.add_dll_directory(dll_dir)
             except Exception:
                 pass
+                
+        # Add MSYS2 bin for dependencies during development (skip in packaged builds)
+        if not getattr(sys, 'frozen', False):
+            mingw_bin = "C:\\msys64\\mingw64\\bin"
+            if os.path.exists(mingw_bin):
+                try:
+                    os.add_dll_directory(mingw_bin)
+                except Exception:
+                    pass
                 
     try:
         dll = ctypes.CDLL(dll_path)

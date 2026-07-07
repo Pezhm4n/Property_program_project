@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QLabel, QMessageBox
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QPushButton, QLabel, QMessageBox, QWidget
 from PySide6.QtCore import Qt
 import sys
 import os
@@ -67,6 +67,11 @@ class ChangePasswordDialog(QDialog):
         self.txt_current.returnPressed.connect(self.submit_change)
         self.txt_new.returnPressed.connect(self.submit_change)
         self.txt_confirm.returnPressed.connect(self.submit_change)
+        
+        # Tab Order
+        QWidget.setTabOrder(self.txt_current, self.txt_new)
+        QWidget.setTabOrder(self.txt_new, self.txt_confirm)
+        QWidget.setTabOrder(self.txt_confirm, self.btn_submit)
         
         # Initial focus
         self.txt_current.setFocus()
