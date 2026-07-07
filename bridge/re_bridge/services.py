@@ -105,21 +105,144 @@ class ReportService:
         
         from reportlab.lib.pagesizes import letter
         from reportlab.pdfgen import canvas
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.platypus import Table, TableStyle
+        from reportlab.lib import colors
+        import arabic_reshaper
+        from bidi.algorithm import get_display
         
+        # Register Tahoma font for Persian/Arabic character rendering support
+        font_path = r"C:\Windows\Fonts\tahoma.ttf"
+        font_bold_path = r"C:\Windows\Fonts\tahomabd.ttf"
+        
+        has_font = False
+        if os.path.exists(font_path):
+            try:
+                pdfmetrics.registerFont(TTFont('Tahoma', font_path))
+                if os.path.exists(font_bold_path):
+                    pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_bold_path))
+                else:
+                    pdfmetrics.registerFont(TTFont('Tahoma-Bold', font_path))
+                has_font = True
+            except Exception:
+                pass
+                
+        font_name = 'Tahoma' if has_font else 'Helvetica'
+        font_bold_name = 'Tahoma-Bold' if has_font else 'Helvetica-Bold'
+        
+        def reshape_text(text: str) -> str:
+            if not text:
+                return ""
+            try:
+                return get_display(arabic_reshaper.reshape(str(text)))
+            except Exception:
+                return str(text)
+
         c = canvas.Canvas(dest_path, pagesize=letter)
         width, height = letter
         
-        c.drawString(100, height - 80, "Real Estate Management System - Properties Report")
-        c.drawString(100, height - 100, f"Total Properties: {len(properties)}")
+        # Draw formal header panel
+        c.setFillColor(colors.HexColor('#0f172a'))
+        c.rect(30, height - 90, width - 60, 60, fill=True, stroke=False)
         
-        y = height - 140
+        c.setFillColor(colors.white)
+        c.setFont(font_bold_name, 16)
+        c.drawRightString(width - 50, height - 60, reshape_text("گزارش جامع سیستم مدیریت املاک"))
+        
+        c.setFont(font_name, 9)
+        c.drawRightString(width - 50, height - 80, reshape_text(f"تعداد کل املاک ثبت شده: {len(properties)} مورد"))
+        c.drawString(50, height - 75, reshape_text("گزارش رسمی سیستم"))
+        
+        # Draw a separator
+        c.setStrokeColor(colors.HexColor('#cbd5e1'))
+        c.setLineWidth(1)
+        c.line(30, height - 110, width - 30, height - 110)
+        
+        # Prepare table headers and records
+        table_data = [
+            [
+                reshape_text("شناسه"),
+                reshape_text("دسته‌بندی"),
+                reshape_text("نوع معامله"),
+                reshape_text("شهر"),
+                reshape_text("منطقه"),
+                reshape_text("آدرس"),
+                reshape_text("متراژ (متر)"),
+                reshape_text("قیمت / اجاره (تومان)")
+            ]
+        ]
+        
         for p in properties:
-            if y < 50:
+            if p.listing_type == "فروش":
+                price_str = f"{p.sale_price:,}"
+            else:
+                price_str = f"ودیعه: {p.rent_deposit:,} / اجاره: {p.rent_monthly:,}"
+                
+            table_data.append([
+                str(p.id),
+                reshape_text(p.category),
+                reshape_text(p.listing_type),
+                reshape_text(p.city),
+                str(p.municipal_district),
+                reshape_text(p.address),
+                f"{p.area_sqm:,}",
+                reshape_text(price_str)
+            ])
+            
+        col_widths = [35, 60, 60, 60, 35, 150, 52, 100]
+        chunk_size = 22
+        chunks = [table_data[i:i + chunk_size] for i in range(1, len(table_data), chunk_size)]
+        
+        if not chunks:
+            t_empty = Table([table_data[0], [reshape_text("هیچ ملکی ثبت نشده است"), "", "", "", "", "", "", ""]], colWidths=col_widths)
+            t_empty.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1e293b')),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,-1), font_name),
+                ('FONTSIZE', (0,0), (-1,-1), 8),
+                ('SPAN', (0,1), (-1,1)),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1'))
+            ]))
+            _, te_height = t_empty.wrap(width - 60, height)
+            t_empty.drawOn(c, 30, height - 140 - te_height)
+            c.save()
+            return
+            
+        for page_idx, chunk in enumerate(chunks):
+            if page_idx > 0:
                 c.showPage()
-                y = height - 80
-            text = f"ID: {p.id} | {p.category} | {p.listing_type} | {p.area_sqm} sqm | Price: {p.sale_price}"
-            c.drawString(100, y, text)
-            y -= 20
+                c.setFillColor(colors.HexColor('#0f172a'))
+                c.rect(30, height - 90, width - 60, 60, fill=True, stroke=False)
+                c.setFillColor(colors.white)
+                c.setFont(font_bold_name, 16)
+                c.drawRightString(width - 50, height - 60, reshape_text("گزارش جامع سیستم مدیریت املاک"))
+                c.setFont(font_name, 9)
+                c.drawRightString(width - 50, height - 80, reshape_text(f"صفحه {page_idx + 1} از {len(chunks)}"))
+                c.setStrokeColor(colors.HexColor('#cbd5e1'))
+                c.line(30, height - 110, width - 30, height - 110)
+                
+            page_table_data = [table_data[0]] + chunk
+            page_table = Table(page_table_data, colWidths=col_widths)
+            page_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1e293b')),
+                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('FONTNAME', (0,0), (-1,0), font_bold_name),
+                ('FONTNAME', (0,1), (-1,-1), font_name),
+                ('FONTSIZE', (0,0), (-1,-1), 8),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#cbd5e1')),
+                ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f8fafc')])
+            ]))
+            _, pt_height = page_table.wrap(width - 60, height - 150)
+            page_table.drawOn(c, 30, height - 130 - pt_height)
+            
+            c.setFillColor(colors.HexColor('#64748b'))
+            c.setFont(font_name, 8)
+            c.drawString(30, 30, reshape_text(f"گزارش جامع املاک | صفحه {page_idx + 1} از {len(chunks)}"))
             
         c.save()
 
@@ -137,22 +260,57 @@ class ReportService:
         workbook = xlsxwriter.Workbook(dest_path)
         worksheet = workbook.add_worksheet()
         
-        headers = ["ID", "Category", "Listing Type", "City", "District", "Address", "Owner Phone", "Area (sqm)", "Price", "Deposit", "Rent"]
+        # Enforce RTL layout in Excel sheet for Persian localization compatibility
+        worksheet.right_to_left()
+        
+        # Styles formatting
+        header_format = workbook.add_format({
+            'bold': True,
+            'font_name': 'Tahoma',
+            'font_size': 11,
+            'font_color': 'white',
+            'bg_color': '#1e293b',
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+        
+        cell_format = workbook.add_format({
+            'font_name': 'Tahoma',
+            'font_size': 10,
+            'border': 1,
+            'align': 'center',
+            'valign': 'vcenter'
+        })
+        
+        headers = [
+            "شناسه", "دسته‌بندی", "نوع معامله", "شهر", "منطقه شهرداری",
+            "آدرس کامل", "تلفن مالک", "متراژ (متر مربع)", "قیمت فروش (تومان)",
+            "مبلغ رهن (تومان)", "اجاره ماهیانه (تومان)"
+        ]
+        
+        worksheet.set_row(0, 24)
         for col_num, header in enumerate(headers):
-            worksheet.write(0, col_num, header)
+            worksheet.write(0, col_num, header, header_format)
+            
+        # Standardized column widths
+        col_widths = [8, 14, 14, 14, 15, 35, 16, 18, 20, 20, 20]
+        for col_idx, width in enumerate(col_widths):
+            worksheet.set_column(col_idx, col_idx, width)
             
         for row_num, p in enumerate(properties, start=1):
-            worksheet.write(row_num, 0, p.id)
-            worksheet.write(row_num, 1, p.category)
-            worksheet.write(row_num, 2, p.listing_type)
-            worksheet.write(row_num, 3, p.city)
-            worksheet.write(row_num, 4, p.municipal_district)
-            worksheet.write(row_num, 5, p.address)
-            worksheet.write(row_num, 6, p.owner_phone)
-            worksheet.write(row_num, 7, p.area_sqm)
-            worksheet.write(row_num, 8, p.sale_price)
-            worksheet.write(row_num, 9, p.rent_deposit)
-            worksheet.write(row_num, 10, p.rent_monthly)
+            worksheet.set_row(row_num, 20)
+            worksheet.write(row_num, 0, p.id, cell_format)
+            worksheet.write(row_num, 1, p.category, cell_format)
+            worksheet.write(row_num, 2, p.listing_type, cell_format)
+            worksheet.write(row_num, 3, p.city, cell_format)
+            worksheet.write(row_num, 4, p.municipal_district, cell_format)
+            worksheet.write(row_num, 5, p.address, cell_format)
+            worksheet.write(row_num, 6, p.owner_phone, cell_format)
+            worksheet.write(row_num, 7, p.area_sqm, cell_format)
+            worksheet.write(row_num, 8, p.sale_price, cell_format)
+            worksheet.write(row_num, 9, p.rent_deposit, cell_format)
+            worksheet.write(row_num, 10, p.rent_monthly, cell_format)
             
         workbook.close()
 
