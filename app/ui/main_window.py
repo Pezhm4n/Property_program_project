@@ -22,6 +22,7 @@ class MainWindow(BaseWindow):
         # Sidebar layout container to set modern margins
         sidebar_container = QWidget()
         sidebar_container.setObjectName("sidebarContainer")
+        sidebar_container.setFixedWidth(220)
         sidebar_layout = QVBoxLayout(sidebar_container)
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
@@ -57,8 +58,8 @@ class MainWindow(BaseWindow):
         self.settings_page = SettingsPage(self.nav_manager.session, self)
         self.content_stack.addWidget(self.settings_page)
         
-        main_layout.addWidget(sidebar_container)
-        main_layout.addWidget(self.content_stack)
+        main_layout.addWidget(sidebar_container, 0)
+        main_layout.addWidget(self.content_stack, 1)
         
         self.setCentralWidget(central_widget)
         
