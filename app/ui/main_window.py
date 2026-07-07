@@ -5,6 +5,7 @@ from ui.base_window import BaseWindow
 from ui.views.property_list_view import PropertyListView
 from ui.views.dashboard_page import DashboardPage
 from ui.views.reports_page import ReportsPage
+from ui.views.settings_page import SettingsPage
 
 class MainWindow(BaseWindow):
     def __init__(self, nav_manager):
@@ -33,9 +34,7 @@ class MainWindow(BaseWindow):
         self.sidebar.addItem("🏘 املاک")
         self.sidebar.addItem("📊 گزارش‌ها")
         
-        item_settings = QListWidgetItem("⚙ تنظیمات")
-        item_settings.setFlags(item_settings.flags() & ~Qt.ItemFlag.ItemIsEnabled)
-        self.sidebar.addItem(item_settings)
+        self.sidebar.addItem("⚙ تنظیمات")
         sidebar_layout.addWidget(self.sidebar)
         
         # Content Area
@@ -53,6 +52,10 @@ class MainWindow(BaseWindow):
         # Reports Page
         self.reports_page = ReportsPage(self.nav_manager.session)
         self.content_stack.addWidget(self.reports_page)
+        
+        # Settings Page
+        self.settings_page = SettingsPage(self.nav_manager.session, self)
+        self.content_stack.addWidget(self.settings_page)
         
         main_layout.addWidget(sidebar_container)
         main_layout.addWidget(self.content_stack)
@@ -79,6 +82,7 @@ class MainWindow(BaseWindow):
         
         self.toolbar_sep1 = self.toolbar.addSeparator()
         self.act_refresh = self.toolbar.addAction("🔄 بروزرسانی")
+        self.act_refresh.triggered.connect(self._on_refresh_triggered)
         
         self.toolbar_sep2 = self.toolbar.addSeparator()
         self.act_theme = self.toolbar.addAction("🌓 تغییر تم")
@@ -110,17 +114,16 @@ class MainWindow(BaseWindow):
         
         self.act_refresh.setVisible(index in (0, 1))
         
-        # Reconnect refresh button dynamically to current page
-        try:
-            self.act_refresh.triggered.disconnect()
-        except Exception:
-            pass
-            
         if index == 0:
-            self.act_refresh.triggered.connect(self.dashboard_page.refresh_data)
             self.dashboard_page.refresh_data()
         elif index == 1:
-            self.act_refresh.triggered.connect(self.property_view.refresh_data)
+            self.property_view.refresh_data()
+            
+    def _on_refresh_triggered(self):
+        index = self.content_stack.currentIndex()
+        if index == 0:
+            self.dashboard_page.refresh_data()
+        elif index == 1:
             self.property_view.refresh_data()
             
     def update_status_bar(self):

@@ -1,6 +1,11 @@
 /* theme_light.qss - Premium Light Colors */
-QMainWindow, QWidget {
+QMainWindow, QDialog, QFrame, QStackedWidget {
     background-color: #f8fafc;
+    color: #0f172a;
+}
+
+QLabel, QCheckBox, QRadioButton {
+    background-color: transparent;
     color: #0f172a;
 }
 

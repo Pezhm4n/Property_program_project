@@ -1,6 +1,11 @@
 /* theme_dark.qss - Premium Dark Colors */
-QMainWindow, QWidget {
+QMainWindow, QDialog, QFrame, QStackedWidget {
     background-color: #0f172a;
+    color: #f8fafc;
+}
+
+QLabel, QCheckBox, QRadioButton {
+    background-color: transparent;
     color: #f8fafc;
 }
 
