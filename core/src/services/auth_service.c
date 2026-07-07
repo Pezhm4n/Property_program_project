@@ -25,9 +25,13 @@ int auth_login(const char* req, char** res) {
         cJSON_Delete(root);
         return RE_ERR_VALIDATION;
     }
-    
     const char* username = username_item->valuestring;
     const char* password = password_item->valuestring;
+    
+    if (strlen(username) >= 50 || strlen(password) >= 255) {
+        cJSON_Delete(root);
+        return RE_ERR_AUTH;
+    }
     
     User user;
     memset(&user, 0, sizeof(User));
@@ -52,6 +56,7 @@ int auth_login(const char* req, char** res) {
             lock_tm.tm_sec = sc;
             time_t lock_time = mktime(&lock_tm);
             if (now < lock_time) {
+                memset(&user, 0, sizeof(User));
                 cJSON_Delete(root);
                 return RE_ERR_LOCKED;
             }
@@ -71,6 +76,7 @@ int auth_login(const char* req, char** res) {
         } else {
             user_repo_update_failed_attempts(user.id, attempts, "");
         }
+        memset(&user, 0, sizeof(User));
         cJSON_Delete(root);
         return RE_ERR_AUTH;
     }
@@ -93,7 +99,7 @@ int auth_login(const char* req, char** res) {
     free(resp_str);
     cJSON_Delete(resp);
     cJSON_Delete(root);
-    
+    memset(&user, 0, sizeof(User));
     return 0;
 }
 
@@ -159,6 +165,11 @@ int auth_create_initial_admin(const char* req, char** res) {
     const char* username = username_item->valuestring;
     const char* password = password_item->valuestring;
     
+    if (strlen(username) >= 50 || strlen(password) >= 255) {
+        cJSON_Delete(root);
+        return RE_ERR_VALIDATION;
+    }
+    
     sqlite3_stmt* stmt = NULL;
     int rc = db_prepare("SELECT COUNT(*) FROM users;", &stmt);
     int count = 0;
@@ -188,12 +199,14 @@ int auth_create_initial_admin(const char* req, char** res) {
     int new_id = 0;
     rc = user_repo_create(&admin_user, &new_id);
     if (rc != 0) {
+        memset(&admin_user, 0, sizeof(User));
         cJSON_Delete(root);
         return rc;
     }
     
     audit_repo_log(new_id, "WIZARD_CREATE_ADMIN", "users", new_id, "{}", "{\"status\":\"created\"}", "127.0.0.1", "local");
     
+    memset(&admin_user, 0, sizeof(User));
     cJSON_Delete(root);
     *res = strdup("{\"status\":\"created\"}");
     return 0;
@@ -217,6 +230,11 @@ int auth_change_password(const char* req, char** res) {
     const char* current_pw = current_pw_item->valuestring;
     const char* new_pw = new_pw_item->valuestring;
     
+    if (strlen(username) >= 50 || strlen(current_pw) >= 255 || strlen(new_pw) >= 255) {
+        cJSON_Delete(root);
+        return RE_ERR_VALIDATION;
+    }
+    
     if (strlen(new_pw) < 6) {
         cJSON_Delete(root);
         return RE_ERR_VALIDATION;
@@ -231,6 +249,7 @@ int auth_change_password(const char* req, char** res) {
     }
     
     if (strcmp(user.password_hash, current_pw) != 0) {
+        memset(&user, 0, sizeof(User));
         cJSON_Delete(root);
         return RE_ERR_AUTH;
     }
@@ -238,6 +257,7 @@ int auth_change_password(const char* req, char** res) {
     sqlite3_stmt* stmt = NULL;
     rc = db_prepare("UPDATE users SET password_hash = ? WHERE id = ?;", &stmt);
     if (rc != 0) {
+        memset(&user, 0, sizeof(User));
         cJSON_Delete(root);
         return rc;
     }
@@ -249,12 +269,14 @@ int auth_change_password(const char* req, char** res) {
     sqlite3_finalize(stmt);
     
     if (step_rc != SQLITE_DONE) {
+        memset(&user, 0, sizeof(User));
         cJSON_Delete(root);
         return db_map_error(step_rc);
     }
     
     audit_repo_log(user.id, "CHANGE_PASSWORD", "users", user.id, "{}", "{\"status\":\"success\"}", "127.0.0.1", "local");
     
+    memset(&user, 0, sizeof(User));
     cJSON_Delete(root);
     *res = strdup("{\"status\":\"success\"}");
     return 0;

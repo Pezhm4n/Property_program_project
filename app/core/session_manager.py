@@ -50,7 +50,10 @@ class SessionManager:
         self.session_token = None
         self.username = None
         self.remember_me = False
-        self.theme = self.storage.load("theme") or "dark"
+        self.theme = self.storage.load("theme")
+        if self.theme not in ["dark", "light"]:
+            self.theme = "dark"
+            self.storage.save("theme", "dark")
         self._load_preferences()
 
     def set_session(self, token: str, username: str, remember: bool):
@@ -93,7 +96,11 @@ class SessionManager:
     def get_session_timeout(self) -> int:
         val = self.storage.load("session_timeout_minutes")
         try:
-            return int(val) if val else 15
+            val_int = int(val) if val else 15
+            if val_int <= 0:
+                val_int = 15
+                self.storage.save("session_timeout_minutes", "15")
+            return val_int
         except Exception:
             return 15
 
@@ -112,7 +119,11 @@ class SessionManager:
     def get_page_size(self) -> int:
         val = self.storage.load("page_size")
         try:
-            return int(val) if val else 20
+            val_int = int(val) if val else 20
+            if val_int <= 0:
+                val_int = 20
+                self.storage.save("page_size", "20")
+            return val_int
         except Exception:
             return 20
 

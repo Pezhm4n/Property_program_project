@@ -63,7 +63,6 @@ class PropertyListView(QWidget):
             message="هیچ ملکی یافت نشد",
             hint="با تغییر فیلترها یا دکمه افزودن، ملک جدید اضافه کنید."
         )
-        
         self.stack.addWidget(self.table)
         self.stack.addWidget(self.empty_state)
         
@@ -79,6 +78,11 @@ class PropertyListView(QWidget):
         
         self.cmb_page_size = QComboBox()
         self.cmb_page_size.addItems(["20", "50", "100"])
+        default_size = str(self.session.get_page_size())
+        if default_size not in ["20", "50", "100"]:
+            self.cmb_page_size.addItem(default_size)
+        self.cmb_page_size.setCurrentText(default_size)
+        self.search_state.pagination.page_size = int(default_size)
         self.cmb_page_size.currentTextChanged.connect(self._on_page_size_changed)
         
         page_layout.addStretch()

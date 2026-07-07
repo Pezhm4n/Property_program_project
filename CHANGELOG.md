@@ -1,8 +1,23 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-
 ## [Unreleased]
+### Added (Phase 12 - Quality Audit & Hardening)
+- Implemented C Core input string bounds checking to mitigate buffer overflow risks on login, registration, and listing fields.
+- Implemented C Core password memory scrubbing using `memset` immediately after authentication.
+- Created secondary database index migration (`0003_add_search_indices.sql`) to optimize search queries and eliminate full table scans.
+- Added validation and sanitization checks for all loaded preferences (page size, theme, session timeout) in `SessionManager`.
+- Added pre-restore validation running SQLite `PRAGMA integrity_check` on backup files to prevent corruption propagation.
+- Verified index usage using SQLite `EXPLAIN QUERY PLAN`.
+- Added unit tests for backup corruption handling.
+
+### Added (Phase 11 - Technical Debt Cleanup & Production Hardening)
+- Refactored DB path resolution to follow prioritization chain: environment variable -> settings.json -> fallback.
+- Removed chart mock data and added dynamic localized empty states.
+- Implemented user setup wizard check (`re_has_any_user` & `re_create_initial_admin`) to prevent default admin hardcoding.
+- Implemented password update validation (`re_change_password`) and settings page integration.
+- Implemented global inactivity event filter on QApplication initiating automated logout session timeouts.
+
 ### Added (Phase 10 - UI/UX Polish & User Experience)
 - Implemented responsive QSS design tokens for custom fonts, borders (8px/12px/16px), scrollbars, and focus rings.
 - Redesigned Login Page as a sleek centered card layout with inline validation alerts and form focus glows.

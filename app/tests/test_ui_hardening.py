@@ -67,7 +67,18 @@ def test_change_password_flow():
     with pytest.raises(ValidationError) as excinfo:
         AuthService.change_password("admin_user", "password123", "123")
     assert excinfo.value.code == -1 # RE_ERR_VALIDATION
-    
+
     # Correct change password
     success = AuthService.change_password("admin_user", "password123", "new_password123")
     assert success is True
+
+def test_backup_restore_integrity_check(tmp_path):
+    # Create a corrupted mock backup file (plain text instead of SQLite database)
+    bad_backup_path = tmp_path / "corrupted_backup.db"
+    bad_backup_path.write_text("THIS IS NOT A SQLITE DATABASE FILE")
+    
+    # Restoring from this file should raise a ValueError
+    from re_bridge.services import BackupService
+    with pytest.raises(ValueError) as excinfo:
+        BackupService.restore_backup("test_token", str(bad_backup_path))
+    assert "اعتبارسنجی بکاپ با خطا مواجه شد" in str(excinfo.value)

@@ -34,8 +34,14 @@ static int map_json_to_property(cJSON* prop_obj, Property* p) {
     cJSON* rent_d = cJSON_GetObjectItem(prop_obj, "rent_deposit");
     cJSON* rent_m = cJSON_GetObjectItem(prop_obj, "rent_monthly");
     cJSON* arch = cJSON_GetObjectItem(prop_obj, "is_archived");
-
     if (!cat || !lt || !addr || !phone || !area) return RE_ERR_VALIDATION;
+
+    // Bounds checking to prevent buffer overflow
+    if (strlen(cat->valuestring) >= sizeof(p->category)) return RE_ERR_VALIDATION;
+    if (strlen(lt->valuestring) >= sizeof(p->listing_type)) return RE_ERR_VALIDATION;
+    if (ct && strlen(ct->valuestring) >= sizeof(p->city)) return RE_ERR_VALIDATION;
+    if (strlen(addr->valuestring) >= sizeof(p->address)) return RE_ERR_VALIDATION;
+    if (strlen(phone->valuestring) >= sizeof(p->owner_phone)) return RE_ERR_VALIDATION;
 
     if (arch) {
         p->is_archived = cJSON_IsTrue(arch) ? 1 : 0;
@@ -48,7 +54,6 @@ static int map_json_to_property(cJSON* prop_obj, Property* p) {
     p->municipal_district = dist ? dist->valueint : 1;
     strcpy(p->address, addr->valuestring);
     strcpy(p->owner_phone, phone->valuestring);
-    
     // Validate fields
     if (!validate_phone(p->owner_phone)) return RE_ERR_VALIDATION;
     

@@ -351,11 +351,33 @@ class BackupService:
         finally:
             re_init(_current_db_path)
         return dest_path
-        
+
     @staticmethod
     def restore_backup(token: str, src_path: str) -> None:
         if not os.path.exists(src_path):
             raise FileNotFoundError("فایل بکاپ یافت نشد.")
+            
+        # Verify integrity of backup database before replacing
+        import sqlite3
+        conn = None
+        try:
+            conn = sqlite3.connect(src_path)
+            cursor = conn.cursor()
+            cursor.execute("PRAGMA integrity_check;")
+            res = cursor.fetchone()
+            if not res or res[0] != "ok":
+                raise ValueError("فایل بکاپ خراب یا نامعتبر است.")
+            
+            # Check row count and table structure compatibility
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users';")
+            if not cursor.fetchone():
+                raise ValueError("ساختار فایل بکاپ نامعتبر است.")
+        except Exception as e:
+            raise ValueError(f"اعتبارسنجی بکاپ با خطا مواجه شد: {str(e)}")
+        finally:
+            if conn:
+                conn.close()
+                
         re_close()
         try:
             shutil.copy2(src_path, _current_db_path)
