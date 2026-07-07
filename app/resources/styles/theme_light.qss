@@ -4,6 +4,11 @@ QMainWindow, QDialog, QFrame, QStackedWidget {
     color: #0f172a;
 }
 
+QWidget#dashboardScrollContent, QScrollArea {
+    background-color: #f8fafc;
+    border: none;
+}
+
 QLabel, QCheckBox, QRadioButton {
     background-color: transparent;
     color: #0f172a;

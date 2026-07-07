@@ -23,6 +23,7 @@ class DashboardPage(QWidget):
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
         scroll_content = QWidget()
+        scroll_content.setObjectName("dashboardScrollContent")
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         
@@ -63,7 +64,9 @@ class DashboardPage(QWidget):
         charts_layout = QHBoxLayout()
         charts_layout.setSpacing(12)
         self.sales_chart = ChartWidget("روند معاملات فروش (ماهانه)", "bar", self)
+        self.sales_chart.setMinimumHeight(240)
         self.rents_chart = ChartWidget("روند معاملات اجاره (ماهانه)", "line", self)
+        self.rents_chart.setMinimumHeight(240)
         charts_layout.addWidget(self.sales_chart)
         charts_layout.addWidget(self.rents_chart)
         scroll_layout.addLayout(charts_layout)

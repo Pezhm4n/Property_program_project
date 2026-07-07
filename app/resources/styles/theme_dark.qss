@@ -6,6 +6,11 @@ QMainWindow, QDialog, QStackedWidget {
     color: #f8fafc; /* Slate-50: primary text */
 }
 
+QWidget#dashboardScrollContent, QScrollArea {
+    background-color: #020617;
+    border: none;
+}
+
 /* 2. MenuBar & Menus */
 QMenuBar {
     background-color: #0f172a; /* Slate-900: secondary container background */
