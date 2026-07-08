@@ -33,9 +33,7 @@ add_library(re_core SHARED
     src/repository/property_repo.c
     src/repository/audit_repo.c
     src/repository/migrations.c
-    src/dto/json_parser.c
     src/dto/dto_validators.c
-    src/errors/error_handler.c
 )
 
 set_target_properties(re_core PROPERTIES PREFIX "" IMPORT_PREFIX "")

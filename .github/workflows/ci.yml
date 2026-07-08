@@ -30,8 +30,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libcjson-dev libsqlite3-dev
 
+    - name: Install Dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        vcpkg install sqlite3 cjson --triplet x64-windows
+
     - name: Configure CMake
-      run: cmake -S core -B core/build
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          cmake -S core -B core/build -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+        else
+          cmake -S core -B core/build
+        fi
+      shell: bash
 
     - name: Build Core
       run: cmake --build core/build --config Release
