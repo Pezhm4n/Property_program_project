@@ -16,7 +16,7 @@ class CreateUserDialog(QDialog):
         super().__init__(parent)
         self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle("ایجاد کاربر جدید")
-        self.resize(400, 360)
+        self.resize(400, 440)
         self.token = token
 
         layout = QVBoxLayout(self)
@@ -99,6 +99,23 @@ class CreateUserDialog(QDialog):
         if len(national_id) != 10 or not national_id.isdigit():
             self.txt_national_id.setStyleSheet(error_style)
             errors.append("کد ملی باید دقیقاً ۱۰ رقم عددی باشد.")
+        else:
+            if len(set(national_id)) == 1:
+                self.txt_national_id.setStyleSheet(error_style)
+                errors.append("کد ملی معتبر نیست (ارقام تکراری).")
+            else:
+                s = sum(int(national_id[i]) * (10 - i) for i in range(9))
+                rem = s % 11
+                control = int(national_id[9])
+                is_valid = False
+                if rem < 2:
+                    is_valid = (control == rem)
+                else:
+                    is_valid = (control == (11 - rem))
+                if not is_valid:
+                    self.txt_national_id.setStyleSheet(error_style)
+                    expected = rem if rem < 2 else 11 - rem
+                    errors.append(f"کد ملی وارد شده ({national_id}) از نظر ریاضی معتبر نیست (خطای رقم کنترل). رقم کنترل صحیح برای این کد ملی باید {expected} باشد.")
             
         if len(phone) != 11 or not phone.startswith("09") or not phone.isdigit():
             self.txt_phone.setStyleSheet(error_style)
@@ -216,7 +233,7 @@ class UserManagementView(QWidget):
         ])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(6, 240)
+        self.table.verticalHeader().setDefaultSectionSize(40)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         layout.addWidget(self.table)
@@ -258,21 +275,23 @@ class UserManagementView(QWidget):
                 username = user.get("username", "")
 
                 btn_toggle = QPushButton("غیرفعال" if not is_disabled else "فعال")
-                btn_toggle.setFixedWidth(70)
+                btn_toggle.setFixedWidth(85)
                 btn_toggle.clicked.connect(lambda checked, uid=user_id, en=is_disabled: self.toggle_user(uid, en))
                 actions_layout.addWidget(btn_toggle)
 
                 btn_reset = QPushButton("ریست رمز")
-                btn_reset.setFixedWidth(70)
+                btn_reset.setFixedWidth(85)
                 btn_reset.clicked.connect(lambda checked, uid=user_id, uname=username: self.reset_password(uid, uname))
                 actions_layout.addWidget(btn_reset)
 
                 btn_role = QPushButton("تغییر نقش")
-                btn_role.setFixedWidth(70)
+                btn_role.setFixedWidth(85)
                 btn_role.clicked.connect(lambda checked, uid=user_id, rid=user.get("role_id", 2): self.change_role(uid, rid))
                 actions_layout.addWidget(btn_role)
 
                 self.table.setCellWidget(row, 6, actions_widget)
+                
+            self.table.horizontalHeader().resizeSection(6, 300)
 
         except Exception as e:
             show_error_dialog(self, e)

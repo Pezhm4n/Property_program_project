@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 static void calculate_financials(const char* category, const char* listing_type, int sale_price, int rent_deposit, int rent_monthly, double* commission_out, double* tax_out) {
     double commission = 0.0;
@@ -114,6 +115,49 @@ int report_get_dashboard(const char* req, char** res) {
         sqlite3_finalize(stmt);
     }
     
+    int sales_counts[6] = {0, 0, 0, 0, 0, 0};
+    int rent_counts[6] = {0, 0, 0, 0, 0, 0};
+    
+    time_t t = time(NULL);
+    struct tm* tm_info = localtime(&t);
+    int current_year = tm_info ? (tm_info->tm_year + 1900) : 2026;
+    int current_month = tm_info ? (tm_info->tm_mon + 1) : 7;
+    
+    char query_buf[256];
+    for (int i = 0; i < 6; ++i) {
+        int target_mon = current_month - (5 - i);
+        int target_yr = current_year;
+        while (target_mon <= 0) {
+            target_mon += 12;
+            target_yr -= 1;
+        }
+        char month_str[16];
+        sprintf(month_str, "%04d-%02d", target_yr, target_mon);
+        
+        // Query sales for this month
+        sprintf(query_buf, "SELECT COUNT(*) FROM properties WHERE (listing_type='فروش' OR listing_type='sale') AND created_at LIKE '%s%%';", month_str);
+        sqlite3_stmt* month_stmt = NULL;
+        int db_count = 0;
+        if (db_prepare(query_buf, &month_stmt) == 0) {
+            if (sqlite3_step(month_stmt) == SQLITE_ROW) {
+                db_count = sqlite3_column_int(month_stmt, 0);
+            }
+            sqlite3_finalize(month_stmt);
+        }
+        sales_counts[i] += db_count;
+        
+        // Query rents for this month
+        sprintf(query_buf, "SELECT COUNT(*) FROM properties WHERE (listing_type='اجاره' OR listing_type='rent' OR listing_type='رهن') AND created_at LIKE '%s%%';", month_str);
+        db_count = 0;
+        if (db_prepare(query_buf, &month_stmt) == 0) {
+            if (sqlite3_step(month_stmt) == SQLITE_ROW) {
+                db_count = sqlite3_column_int(month_stmt, 0);
+            }
+            sqlite3_finalize(month_stmt);
+        }
+        rent_counts[i] += db_count;
+    }
+
     cJSON* dashboard = cJSON_CreateObject();
     cJSON_AddNumberToObject(dashboard, "total_properties", total_props);
     cJSON_AddNumberToObject(dashboard, "active_properties", active_props);
@@ -125,15 +169,15 @@ int report_get_dashboard(const char* req, char** res) {
 
     cJSON* charts = cJSON_CreateObject();
     cJSON* monthly_sales = cJSON_CreateArray();
-    cJSON_AddItemToArray(monthly_sales, cJSON_CreateNumber(total_props * 2));
-    cJSON_AddItemToArray(monthly_sales, cJSON_CreateNumber(total_props * 3));
-    cJSON_AddItemToArray(monthly_sales, cJSON_CreateNumber(total_props));
+    for (int i = 0; i < 6; ++i) {
+        cJSON_AddItemToArray(monthly_sales, cJSON_CreateNumber(sales_counts[i]));
+    }
     cJSON_AddItemToObject(charts, "monthly_sales", monthly_sales);
 
     cJSON* monthly_rents = cJSON_CreateArray();
-    cJSON_AddItemToArray(monthly_rents, cJSON_CreateNumber(active_props));
-    cJSON_AddItemToArray(monthly_rents, cJSON_CreateNumber(archived_props));
-    cJSON_AddItemToArray(monthly_rents, cJSON_CreateNumber(total_props));
+    for (int i = 0; i < 6; ++i) {
+        cJSON_AddItemToArray(monthly_rents, cJSON_CreateNumber(rent_counts[i]));
+    }
     cJSON_AddItemToObject(charts, "monthly_rents", monthly_rents);
 
     cJSON* financials = cJSON_CreateObject();

@@ -98,8 +98,20 @@ class DashboardPage(QWidget):
             
             # Update charts
             charts = data.get("charts", {})
-            self.sales_chart.update_chart_data(charts.get("monthly_sales", []))
-            self.rents_chart.update_chart_data(charts.get("monthly_rents", []))
+            
+            # Generate last 6 Gregorian months in Persian
+            import datetime
+            months_names = ["ژانویه", "فوریه", "مارس", "آوریل", "مه", "ژوئن", "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر", "دسامبر"]
+            cur_month = datetime.datetime.now().month
+            categories = []
+            for i in range(6):
+                m = cur_month - (5 - i)
+                while m <= 0:
+                    m += 12
+                categories.append(months_names[m - 1])
+                
+            self.sales_chart.update_chart_data(charts.get("monthly_sales", []), categories)
+            self.rents_chart.update_chart_data(charts.get("monthly_rents", []), categories)
             
         except Exception as e:
             show_error_dialog(self, e)

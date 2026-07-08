@@ -7,11 +7,13 @@ class SkeletonChart(QWidget):
         super().__init__(parent)
         self.chart_type = chart_type
         self.data = []
-        self.categories = {}
+        self.categories = []
+        self.setMouseTracking(True)
+        self.hovered_index = -1
         
     def set_data(self, data, categories=None):
         self.data = data
-        if categories:
+        if categories is not None:
             self.categories = categories
         self.update()
         
@@ -65,23 +67,37 @@ class SkeletonChart(QWidget):
         bar_width = (width - (spacing * (num_bars + 1))) / num_bars
         
         for i, val in enumerate(self.data):
-            bar_height = (val / max_val) * (height - 40)
+            bar_height = (val / max_val) * (height - 60)
             x = spacing + i * (bar_width + spacing)
-            y = height - bar_height - 20
+            y = height - bar_height - 30
             
-            # Gradient fill for bar
-            gradient = QLinearGradient(x, y, x, height - 20)
-            gradient.setColorAt(0.0, QColor("#38bdf8")) # Sleek Light Blue
-            gradient.setColorAt(1.0, QColor("#0284c7")) # Deep Blue
+            # Highlight if hovered
+            is_hovered = (i == self.hovered_index)
+            gradient = QLinearGradient(x, y, x, height - 30)
+            if is_hovered:
+                gradient.setColorAt(0.0, QColor("#fbbf24")) # Hover: Bright amber
+                gradient.setColorAt(1.0, QColor("#d97706"))
+            else:
+                gradient.setColorAt(0.0, QColor("#38bdf8")) # Sleek Light Blue
+                gradient.setColorAt(1.0, QColor("#0284c7")) # Deep Blue
             
             painter.setBrush(QBrush(gradient))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(x, y, bar_width, bar_height, 6, 6)
             
-            # Draw values
-            text_color = QColor("#f8fafc") if self.palette().window().color().value() < 128 else QColor("#0f172a")
+            # Draw values above the bar
+            text_color = QColor("#f59e0b") if is_hovered else QColor("#94a3b8")
             painter.setPen(text_color)
-            painter.drawText(x + (bar_width / 4), height - 5, f"{val}")
+            val_str = str(val)
+            text_rect = painter.fontMetrics().boundingRect(val_str)
+            painter.drawText(int(x + (bar_width - text_rect.width()) / 2), int(y - 6), val_str)
+
+            # Draw X-axis category label (month name)
+            if self.categories and i < len(self.categories):
+                cat_str = self.categories[i]
+                painter.setPen(QColor("#64748b"))
+                cat_rect = painter.fontMetrics().boundingRect(cat_str)
+                painter.drawText(int(x + (bar_width - cat_rect.width()) / 2), int(height - 10), cat_str)
             
     def draw_line_chart(self, painter, width, height):
         if not self.data:
@@ -91,12 +107,12 @@ class SkeletonChart(QWidget):
         if max_val == 0:
             max_val = 1
         num_points = len(self.data)
-        spacing = width / (num_points - 1) if num_points > 1 else width
+        spacing = (width - 40) / (num_points - 1) if num_points > 1 else width
         
         points = []
         for i, val in enumerate(self.data):
-            x = i * spacing
-            y = height - ((val / max_val) * (height - 40)) - 20
+            x = 20 + i * spacing
+            y = height - ((val / max_val) * (height - 60)) - 30
             points.append(QPointF(x, y))
             
         # Draw dynamic Bezier path
@@ -113,8 +129,8 @@ class SkeletonChart(QWidget):
                 
             # Create a closed path to draw a gradient fill underneath the curve
             fill_path = QPainterPath(path)
-            fill_path.lineTo(points[-1].x(), height - 20)
-            fill_path.lineTo(points[0].x(), height - 20)
+            fill_path.lineTo(points[-1].x(), height - 30)
+            fill_path.lineTo(points[0].x(), height - 30)
             fill_path.closeSubpath()
             
             # Gradient fill under line chart
@@ -128,13 +144,78 @@ class SkeletonChart(QWidget):
             painter.setPen(pen)
             painter.drawPath(path)
             
-        # Draw points with a themed hollow center
+        # Draw points and values
         bg_val = self.palette().window().color().value()
         bg_color = QColor("#020617") if bg_val < 128 else QColor("#FFFFFF")
-        painter.setBrush(QBrush(bg_color))
-        painter.setPen(QPen(QColor("#10B981"), 2.5))
-        for pt in points:
-            painter.drawEllipse(pt, 4.5, 4.5)
+        for i, val in enumerate(self.data):
+            pt = points[i]
+            is_hovered = (i == self.hovered_index)
+            
+            # Draw point dot
+            painter.setBrush(QBrush(QColor("#fbbf24") if is_hovered else bg_color))
+            painter.setPen(QPen(QColor("#f59e0b") if is_hovered else QColor("#10B981"), 2.5))
+            painter.drawEllipse(pt, 5.5 if is_hovered else 4.5, 5.5 if is_hovered else 4.5)
+            
+            # Draw value above dot
+            painter.setPen(QColor("#f59e0b") if is_hovered else QColor("#94a3b8"))
+            val_str = str(val)
+            text_rect = painter.fontMetrics().boundingRect(val_str)
+            painter.drawText(int(pt.x() - text_rect.width() / 2), int(pt.y() - 10), val_str)
+
+            # Draw X-axis label
+            if self.categories and i < len(self.categories):
+                cat_str = self.categories[i]
+                painter.setPen(QColor("#64748b"))
+                cat_rect = painter.fontMetrics().boundingRect(cat_str)
+                painter.drawText(int(pt.x() - cat_rect.width() / 2), int(height - 10), cat_str)
+
+    def mouseMoveEvent(self, event):
+        width = self.width()
+        height = self.height()
+        if not self.data:
+            self.hovered_index = -1
+            self.update()
+            return
+            
+        pos = event.position()
+        mx = pos.x()
+        my = pos.y()
+        
+        num_items = len(self.data)
+        new_hover = -1
+        
+        if self.chart_type == "bar":
+            spacing = 15
+            bar_width = (width - (spacing * (num_items + 1))) / num_items
+            for i in range(num_items):
+                x = spacing + i * (bar_width + spacing)
+                if x <= mx <= x + bar_width:
+                     new_hover = i
+                     break
+        elif self.chart_type == "line":
+            spacing = (width - 40) / (num_items - 1) if num_items > 1 else width
+            for i in range(num_items):
+                px = 20 + i * spacing
+                if abs(mx - px) <= 25:
+                     new_hover = i
+                     break
+                     
+        if new_hover != self.hovered_index:
+             self.hovered_index = new_hover
+             self.update()
+             
+             # Show native tooltip
+             if self.hovered_index != -1 and self.hovered_index < len(self.data):
+                 from PySide6.QtWidgets import QToolTip
+                 val = self.data[self.hovered_index]
+                 month_name = self.categories[self.hovered_index] if (self.categories and self.hovered_index < len(self.categories)) else f"ستون {self.hovered_index + 1}"
+                 tooltip_txt = f"{month_name}: {val} مورد"
+                 QToolTip.showText(event.globalPosition().toPoint(), tooltip_txt, self)
+
+    def leaveEvent(self, event):
+        self.hovered_index = -1
+        self.update()
+        super().leaveEvent(event)
 
 class ChartWidget(QFrame):
     def __init__(self, title: str, chart_type="bar", parent=None):
@@ -154,5 +235,5 @@ class ChartWidget(QFrame):
         self.chart = SkeletonChart(chart_type)
         layout.addWidget(self.chart)
         
-    def update_chart_data(self, data):
-        self.chart.set_data(data)
+    def update_chart_data(self, data, categories=None):
+        self.chart.set_data(data, categories)
