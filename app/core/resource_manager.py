@@ -18,6 +18,9 @@ class ResourceManager:
 
     @staticmethod
     def get_app_icon():
+        icon_path = ResourceManager.resolve_path(os.path.join("assets", "icon.png"))
+        if os.path.exists(icon_path):
+            return QIcon(icon_path)
         # Fallback to empty icon
         return QIcon()
         

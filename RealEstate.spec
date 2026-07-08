@@ -1,4 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
+
+# Inject Anaconda environment binary path so PyInstaller can resolve Shiboken/Qt6 dependencies
+conda_bin = r"C:\Users\Ariike.ir\anaconda3\envs\pythonProject5\Library\bin"
+if os.path.exists(conda_bin):
+    os.environ["PATH"] = conda_bin + os.pathsep + os.environ["PATH"]
 
 block_cipher = None
 
@@ -10,13 +17,14 @@ a = Analysis(
         ('core/migrations', 'core/migrations'),
         ('app/resources/styles', 'app/resources/styles'),
         ('assets/fonts', 'assets/fonts'),
-        ('assets/images', 'assets/images')
+        ('assets/images', 'assets/images'),
+        ('assets/icon.png', 'assets')
     ],
     hiddenimports=['PySide6.QtCore', 'PySide6.QtWidgets', 'PySide6.QtGui', 'reportlab', 'xlsxwriter', 'sqlite3'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['numpy', 'pandas', 'scipy', 'matplotlib', 'tkinter', 'jedi', 'IPython', 'notebook', 'nbconvert', 'nbformat'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -46,4 +54,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='version_info.txt',
+    icon='assets/icon.ico',
 )
