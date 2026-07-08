@@ -4,7 +4,6 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'bridge')))
-from re_bridge.models import SearchState
 
 class FilterDialog(QDialog):
     def __init__(self, parent=None, current_filters=None):

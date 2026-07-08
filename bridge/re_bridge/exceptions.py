@@ -11,20 +11,34 @@ class REException(Exception):
         self.details = details
         super().__init__(f"[{code}] {message} - {details}" if details else f"[{code}] {message}")
 
-class ValidationError(REException): pass
-class NotFoundError(REException): pass
-class DuplicateError(REException): pass
-class AuthenticationError(REException): pass
-class LockedError(REException): pass
-class ForbiddenError(REException): pass
-class DatabaseError(REException): pass
-class SessionExpiredError(REException): pass
-class BusyError(REException): pass
-class CorruptError(REException): pass
-class LastAdminError(REException): pass
-class MemoryError(REException): pass
-class InternalError(REException): pass
-class NotImplementedError(REException): pass
+class ValidationError(REException):
+    pass
+class NotFoundError(REException):
+    pass
+class DuplicateError(REException):
+    pass
+class AuthenticationError(REException):
+    pass
+class LockedError(REException):
+    pass
+class ForbiddenError(REException):
+    pass
+class DatabaseError(REException):
+    pass
+class SessionExpiredError(REException):
+    pass
+class BusyError(REException):
+    pass
+class CorruptError(REException):
+    pass
+class LastAdminError(REException):
+    pass
+class MemoryError(REException):
+    pass
+class InternalError(REException):
+    pass
+class NotImplementedError(REException):
+    pass
 
 def check_error(code: int, details: str = "") -> None:
     if code == 0:

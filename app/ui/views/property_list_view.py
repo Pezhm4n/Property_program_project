@@ -11,7 +11,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'bridge')))
 from re_bridge.services import PropertyService
-from re_bridge.models import SearchState, SortingDTO
+from re_bridge.models import SearchState
 
 class PropertyListView(QWidget):
     def __init__(self, session_manager):

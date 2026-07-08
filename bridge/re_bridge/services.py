@@ -5,10 +5,9 @@ Real Estate Management System
 import json
 import os
 import shutil
-from typing import Tuple
 from .loader import call_dll_endpoint
 from .exceptions import check_error
-from .models import LoginRequest, LoginResponse, PropertyDTO, SearchState
+from .models import LoginRequest, PropertyDTO, SearchState
 
 _current_db_path = "real_estate.db"
 

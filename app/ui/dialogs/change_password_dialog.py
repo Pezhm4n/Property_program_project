@@ -89,9 +89,12 @@ class ChangePasswordDialog(QDialog):
         self.txt_confirm.setStyleSheet(default_style)
         
         if not current_pw or not new_pw or not confirm:
-            if not current_pw: self.txt_current.setStyleSheet(error_style)
-            if not new_pw: self.txt_new.setStyleSheet(error_style)
-            if not confirm: self.txt_confirm.setStyleSheet(error_style)
+            if not current_pw:
+                self.txt_current.setStyleSheet(error_style)
+            if not new_pw:
+                self.txt_new.setStyleSheet(error_style)
+            if not confirm:
+                self.txt_confirm.setStyleSheet(error_style)
             QMessageBox.warning(self, "خطا", "تکمیل تمام فیلدها الزامی است.")
             return
         if len(new_pw) < 6:

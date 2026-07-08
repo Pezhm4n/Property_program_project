@@ -1,7 +1,6 @@
 import pytest
 import os
 import sys
-from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
 from re_bridge.services import AuthService, re_init, re_close

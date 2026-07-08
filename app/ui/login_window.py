@@ -5,10 +5,9 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
-from re_bridge.exceptions import REException
 from re_bridge.services import AuthService
 from re_bridge.models import LoginRequest
-from ui.dialogs import show_error_dialog, create_loading_dialog
+from ui.dialogs import create_loading_dialog
 
 class LoginWindow(BaseWindow):
     def __init__(self, nav_manager):

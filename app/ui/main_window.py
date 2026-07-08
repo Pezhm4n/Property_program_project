@@ -1,6 +1,5 @@
-from PySide6.QtWidgets import (QLabel, QStatusBar, QToolBar, QWidget, 
-                                 QVBoxLayout, QHBoxLayout, QPushButton, QStackedWidget, QListWidget, QListWidgetItem)
-from PySide6.QtGui import QShortcut, QKeySequence
+from PySide6.QtWidgets import (QStatusBar, QToolBar, QWidget, 
+                                 QVBoxLayout, QHBoxLayout, QStackedWidget, QListWidget)
 from PySide6.QtCore import Qt, QSize
 from ui.base_window import BaseWindow
 from ui.views.property_list_view import PropertyListView

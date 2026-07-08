@@ -8,7 +8,6 @@ from PySide6.QtWidgets import QApplication
 from ui.widgets.statistics_card import StatisticsCard
 from ui.widgets.recent_activity import RecentActivityWidget
 from ui.widgets.empty_state import EmptyStateWidget
-from re_bridge.models import SearchState
 
 # Re-use QApplication if already initialized by pytest-qt or create a test fixture
 @pytest.fixture(scope="module")

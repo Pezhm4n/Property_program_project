@@ -171,7 +171,6 @@ class SkeletonChart(QWidget):
 
     def mouseMoveEvent(self, event):
         width = self.width()
-        height = self.height()
         if not self.data:
             self.hovered_index = -1
             self.update()
@@ -179,7 +178,6 @@ class SkeletonChart(QWidget):
             
         pos = event.position()
         mx = pos.x()
-        my = pos.y()
         
         num_items = len(self.data)
         new_hover = -1

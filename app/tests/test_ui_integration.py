@@ -1,11 +1,10 @@
 import pytest
 import sys
 import os
-import sqlite3
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
 from re_bridge.services import PropertyService, DashboardService, BackupService, re_init, re_close
-from re_bridge.models import PropertyDTO, SearchState
+from re_bridge.models import PropertyDTO
 @pytest.fixture(autouse=True)
 def setup_test_db():
     re_init("real_estate_test.db", "core/migrations")

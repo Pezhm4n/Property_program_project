@@ -1,0 +1,11 @@
+[tool.ruff]
+# Exclude legacy coursework files from validation checks
+exclude = [
+    "bridge/__init__.py",
+    "bridge/lib_handler.py",
+    "bridge/property_bridge.py",
+    "bridge/mock_lib.py"
+]
+
+[tool.ruff.lint]
+ignore = ["E701"]
