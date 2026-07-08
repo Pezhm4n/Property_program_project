@@ -21,9 +21,9 @@ def _get_dll_path() -> str:
     if sys.platform == 'win32':
         return os.path.join(base_dir, 'core', 'build', 're_core.dll')
     elif sys.platform == 'darwin':
-        return os.path.join(base_dir, 'core', 'build', 'libre_core.dylib')
+        return os.path.join(base_dir, 'core', 'build', 're_core.dylib')
     else:
-        return os.path.join(base_dir, 'core', 'build', 'libre_core.so')
+        return os.path.join(base_dir, 'core', 'build', 're_core.so')
 
 def load_dll() -> ctypes.CDLL:
     dll_path = _get_dll_path()
