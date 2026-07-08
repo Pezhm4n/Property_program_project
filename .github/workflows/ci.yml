@@ -59,7 +59,7 @@ jobs:
         ctest -C Release --output-on-failure
         cd ../../
         if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-          xvfb-run pytest app/tests bridge/tests
+          QT_QPA_PLATFORM=offscreen pytest app/tests bridge/tests
         else
           pytest app/tests bridge/tests
         fi
