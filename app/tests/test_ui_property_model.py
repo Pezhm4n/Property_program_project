@@ -6,7 +6,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'bridge')))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from re_bridge.models import PropertyDTO
-from app.ui.models.property_table_model import PropertyTableModel
+from ui.models.property_table_model import PropertyTableModel
 
 def test_property_table_model_row_count():
     model = PropertyTableModel([])

@@ -13,6 +13,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static void trim_whitespace(char* str) {
+    if (!str) return;
+    char* start = str;
+    while (*start == ' ' || *start == '\t' || *start == '\r' || *start == '\n') {
+        start++;
+    }
+    if (start != str) {
+        memmove(str, start, strlen(start) + 1);
+    }
+    size_t len = strlen(str);
+    while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\t' || str[len - 1] == '\r' || str[len - 1] == '\n')) {
+        str[len - 1] = '\0';
+        len--;
+    }
+}
+
 static int validate_phone(const char* phone) {
     if (!phone || strlen(phone) != 11) return 0;
     if (phone[0] != '0' || phone[1] != '9') return 0;
@@ -54,8 +70,17 @@ static int map_json_to_property(cJSON* prop_obj, Property* p) {
     p->municipal_district = dist ? dist->valueint : 1;
     strcpy(p->address, addr->valuestring);
     strcpy(p->owner_phone, phone->valuestring);
+
+    // Hardening: trim input strings
+    trim_whitespace(p->category);
+    trim_whitespace(p->listing_type);
+    trim_whitespace(p->city);
+    trim_whitespace(p->address);
+    trim_whitespace(p->owner_phone);
+
     // Validate fields
     if (!validate_phone(p->owner_phone)) return RE_ERR_VALIDATION;
+    if (strlen(p->address) == 0) return RE_ERR_VALIDATION; // Reject whitespace-only address
     
     p->area_sqm = area->valueint;
     p->sale_price = sale_p ? sale_p->valueint : 0;
@@ -65,6 +90,7 @@ static int map_json_to_property(cJSON* prop_obj, Property* p) {
     // Additional validations
     if (p->area_sqm <= 0) return RE_ERR_VALIDATION;
     if (p->municipal_district < 1 || p->municipal_district > 22) return RE_ERR_VALIDATION;
+    if (p->sale_price < 0 || p->rent_deposit < 0 || p->rent_monthly < 0) return RE_ERR_VALIDATION;
     
     if (strcmp(p->listing_type, "فروش") == 0 || strcmp(p->listing_type, "sale") == 0) {
         if (p->sale_price <= 0) return RE_ERR_VALIDATION;
@@ -84,6 +110,13 @@ int property_create(const char* req, char** res) {
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
     
+    // RBAC: Validate session and CREATE_PROPERTY permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_CREATE_PROPERTY, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
+    
     cJSON* prop_obj = cJSON_GetObjectItem(root, "property");
     if (!prop_obj) {
         cJSON_Delete(root);
@@ -97,7 +130,7 @@ int property_create(const char* req, char** res) {
         cJSON_Delete(root);
         return val_rc;
     }
-    p.created_by = 1; // Default actor ID
+    p.created_by = actor_id;
     
     int new_id = 0;
     int rc = db_begin_transaction();
@@ -113,7 +146,7 @@ int property_create(const char* req, char** res) {
         return rc;
     }
 
-    rc = audit_repo_log(p.created_by, "CREATE_PROPERTY", "properties", new_id, "{}", "{\"status\":\"created\"}", "127.0.0.1", "local");
+    rc = audit_repo_log(actor_id, "CREATE_PROPERTY", "properties", new_id, "{}", "{\"status\":\"created\"}", "127.0.0.1", "local");
     if (rc != 0) {
         db_rollback_transaction();
         cJSON_Delete(root);
@@ -139,6 +172,13 @@ int property_update(const char* req, char** res) {
     
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
+    
+    // RBAC: Validate session and EDIT_PROPERTY permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_EDIT_PROPERTY, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
     
     cJSON* id_item = cJSON_GetObjectItem(root, "id");
     cJSON* prop_obj = cJSON_GetObjectItem(root, "property");
@@ -170,7 +210,7 @@ int property_update(const char* req, char** res) {
         return rc;
     }
     
-    audit_repo_log(1, "UPDATE_PROPERTY", "properties", p.id, "{}", "{\"status\":\"updated\"}", "127.0.0.1", "local");
+    audit_repo_log(actor_id, "UPDATE_PROPERTY", "properties", p.id, "{}", "{\"status\":\"updated\"}", "127.0.0.1", "local");
     
     rc = db_commit_transaction();
     cJSON_Delete(root);
@@ -186,6 +226,13 @@ int property_get_all(const char* req, char** res) {
     
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
+    
+    // RBAC: Validate session and VIEW_PROPERTIES permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_VIEW_PROPERTIES, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
     
     cJSON* state = cJSON_GetObjectItem(root, "search_state");
     const char* query = NULL;
@@ -295,6 +342,14 @@ int property_get_by_id(const char* req, char** res) {
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
     
+    // RBAC: Validate session and VIEW_PROPERTIES permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    (void)actor_id;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_VIEW_PROPERTIES, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
+    
     cJSON* id_item = cJSON_GetObjectItem(root, "id");
     if (!id_item) {
         cJSON_Delete(root);
@@ -334,15 +389,23 @@ int property_archive(const char* req, char** res) {
     if (!req || !res) return RE_ERR_VALIDATION;
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
+    
+    // RBAC: Validate session and ARCHIVE_PROPERTY permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_ARCHIVE_PROPERTY, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
     cJSON* id_item = cJSON_GetObjectItem(root, "id");
     if (!id_item) {
         cJSON_Delete(root);
         return RE_ERR_VALIDATION;
     }
     int id = id_item->valueint;
-    int rc = property_repo_archive(id, 1);
+    int rc = property_repo_archive(id, actor_id);
     cJSON_Delete(root);
     if (rc == 0) {
+        audit_repo_log(actor_id, "ARCHIVE_PROPERTY", "properties", id, "{}", "{\"status\":\"archived\"}", "127.0.0.1", "local");
         *res = strdup("{\"status\":\"ok\"}");
     }
     return rc;
@@ -352,6 +415,13 @@ int property_restore(const char* req, char** res) {
     if (!req || !res) return RE_ERR_VALIDATION;
     cJSON* root = cJSON_Parse(req);
     if (!root) return RE_ERR_VALIDATION;
+    
+    // RBAC: Validate session and RESTORE_PROPERTY permission
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_RESTORE_PROPERTY, &actor_id);
+    if (perm_rc != 0) { cJSON_Delete(root); return perm_rc; }
     cJSON* id_item = cJSON_GetObjectItem(root, "id");
     if (!id_item) {
         cJSON_Delete(root);
@@ -361,6 +431,7 @@ int property_restore(const char* req, char** res) {
     int rc = property_repo_restore(id);
     cJSON_Delete(root);
     if (rc == 0) {
+        audit_repo_log(actor_id, "RESTORE_PROPERTY", "properties", id, "{}", "{\"status\":\"restored\"}", "127.0.0.1", "local");
         *res = strdup("{\"status\":\"ok\"}");
     }
     return rc;

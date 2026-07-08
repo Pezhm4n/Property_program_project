@@ -1,6 +1,6 @@
 /**
  * @file exports.c
- * @brief DLL API Export Facades
+ * @brief DLL API Export Facades (RBAC-aware)
  * @copyright Real Estate Management System
  */
 #include "re_core.h"
@@ -14,11 +14,11 @@
 static __thread int last_error = 0;
 
 RE_API int re_get_api_version() {
-    return 100; // 1.0.0
+    return 200; // 2.0.0 — RBAC release
 }
 
 RE_API int re_get_dll_version() {
-    return 100; // 1.0.0
+    return 200; // 2.0.0
 }
 
 RE_API int re_get_last_error() {
@@ -143,6 +143,44 @@ RE_API int re_create_initial_admin(const char* request_json, char** response_jso
 
 RE_API int re_change_password(const char* request_json, char** response_json_out) {
     int rc = auth_change_password(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+/* ======================== USER MANAGEMENT API ======================== */
+
+RE_API int re_get_users(const char* request_json, char** response_json_out) {
+    int rc = user_management_get_all(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_create_user(const char* request_json, char** response_json_out) {
+    int rc = user_management_create(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_change_user_role(const char* request_json, char** response_json_out) {
+    int rc = user_management_change_role(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_reset_user_password(const char* request_json, char** response_json_out) {
+    int rc = user_management_reset_password(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_toggle_user_status(const char* request_json, char** response_json_out) {
+    int rc = user_management_toggle_status(request_json, response_json_out);
+    if (rc != 0) last_error = rc;
+    return rc;
+}
+
+RE_API int re_log_audit(const char* request_json, char** response_json_out) {
+    int rc = auth_log_audit(request_json, response_json_out);
     if (rc != 0) last_error = rc;
     return rc;
 }

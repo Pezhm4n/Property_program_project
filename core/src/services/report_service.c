@@ -26,6 +26,15 @@ static void calculate_financials(const char* category, const char* listing_type,
 }
 
 int report_generate(const char* req, char** res) {
+    if (!req || !res) return RE_ERR_VALIDATION;
+    cJSON* root = cJSON_Parse(req);
+    if (!root) return RE_ERR_VALIDATION;
+    cJSON* token_item = cJSON_GetObjectItem(root, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_VIEW_REPORTS, &actor_id);
+    cJSON_Delete(root);
+    if (perm_rc != 0) return perm_rc;
     return property_get_all(req, res);
 }
 
@@ -38,6 +47,15 @@ int report_get_statistics(const char* req, char** res) {
 int report_get_dashboard(const char* req, char** res) {
     if (!req || !res) return RE_ERR_VALIDATION;
     
+    // RBAC: Validate session (VIEW_PROPERTIES is enough for basic dashboard)
+    cJSON* root_rbac = cJSON_Parse(req);
+    if (!root_rbac) return RE_ERR_VALIDATION;
+    cJSON* token_item = cJSON_GetObjectItem(root_rbac, "token");
+    int actor_id = 0;
+    if (!token_item) { cJSON_Delete(root_rbac); return RE_ERR_AUTH; }
+    int perm_rc = validate_session_and_permission(token_item->valuestring, PERM_VIEW_PROPERTIES, &actor_id);
+    cJSON_Delete(root_rbac);
+    if (perm_rc != 0) return perm_rc;
     sqlite3_stmt* stmt = NULL;
     int rc = db_prepare("SELECT COUNT(*), SUM(CASE WHEN is_archived = 0 THEN 1 ELSE 0 END), SUM(CASE WHEN is_archived = 1 THEN 1 ELSE 0 END) FROM properties;", &stmt);
     int total_props = 0, active_props = 0, archived_props = 0;

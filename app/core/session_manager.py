@@ -49,6 +49,12 @@ class SessionManager:
         self.storage = storage
         self.session_token = None
         self.username = None
+        self.user_id = 0
+        self.role = ""
+        self.role_id = 0
+        self.first_name = ""
+        self.last_name = ""
+        self.permissions = []
         self.remember_me = False
         self.theme = self.storage.load("theme")
         if self.theme not in ["dark", "light"]:
@@ -56,11 +62,22 @@ class SessionManager:
             self.storage.save("theme", "dark")
         self._load_preferences()
 
-    def set_session(self, token: str, username: str, remember: bool):
-        self.session_token = token
-        self.username = username
+    def set_session(self, login_data: dict, remember: bool):
+        """Populate session from RBAC login response dict."""
+        self.session_token = login_data.get("token", "")
+        self.username = login_data.get("username", "")
+        self.user_id = int(login_data.get("user_id", 0))
+        self.role = login_data.get("role", "")
+        self.role_id = int(login_data.get("role_id", 0))
+        self.first_name = login_data.get("first_name", "")
+        self.last_name = login_data.get("last_name", "")
+        self.permissions = login_data.get("permissions", [])
         self.remember_me = remember
         self._save_preferences()
+
+    def has_permission(self, permission_name: str) -> bool:
+        """Check if the current session has a specific permission."""
+        return permission_name in self.permissions
 
     def set_theme(self, theme: str):
         self.theme = theme
@@ -69,6 +86,12 @@ class SessionManager:
     def clear_session(self):
         self.session_token = None
         self.username = None
+        self.user_id = 0
+        self.role = ""
+        self.role_id = 0
+        self.first_name = ""
+        self.last_name = ""
+        self.permissions = []
         self.remember_me = False
         self._save_preferences()
 

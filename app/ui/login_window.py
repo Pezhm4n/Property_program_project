@@ -132,7 +132,7 @@ class LoginWindow(BaseWindow):
             req = LoginRequest(username=user, password=pwd)
             res = AuthService.login(req)
             
-            self.nav_manager.session.set_session(res.token, user, remember)
+            self.nav_manager.session.set_session(res, remember)
             loading.close()
             self.nav_manager.show_main_window()
         except Exception as e:

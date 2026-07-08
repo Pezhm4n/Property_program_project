@@ -19,8 +19,14 @@ def setup_test_db():
             os.remove("real_estate_test.db")
         except Exception:
             pass
+def get_auth_token():
+    from re_bridge.services import AuthService
+    from re_bridge.models import LoginRequest
+    res = AuthService.login(LoginRequest(username="admin", password="password123"))
+    return res["token"]
+
 def test_commission_and_tax_calculation():
-    token = "test_token"
+    token = get_auth_token()
     
     # 1. Residential Sale (BR-001: 0.25% + 9% VAT)
     p1 = PropertyDTO(
@@ -44,7 +50,7 @@ def test_commission_and_tax_calculation():
     assert financials["tax"] == 675
 
 def test_backup_and_restore():
-    token = "test_token"
+    token = get_auth_token()
     backup_file = "test_backup.db"
     
     p = PropertyDTO(
@@ -76,7 +82,7 @@ def test_backup_and_restore():
         os.remove(backup_file)
 
 def test_dashboard_real_data():
-    token = "test_token"
+    token = get_auth_token()
     p = PropertyDTO(
         id=0, is_archived=False, category="مسکونی", listing_type="فروش",
         city="Tehran", municipal_district=1, address="Address", owner_phone="09123456789",

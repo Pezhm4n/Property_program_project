@@ -5,9 +5,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import pytest
 from PySide6.QtWidgets import QApplication
-from app.ui.widgets.statistics_card import StatisticsCard
-from app.ui.widgets.recent_activity import RecentActivityWidget
-from app.ui.widgets.empty_state import EmptyStateWidget
+from ui.widgets.statistics_card import StatisticsCard
+from ui.widgets.recent_activity import RecentActivityWidget
+from ui.widgets.empty_state import EmptyStateWidget
 from re_bridge.models import SearchState
 
 # Re-use QApplication if already initialized by pytest-qt or create a test fixture

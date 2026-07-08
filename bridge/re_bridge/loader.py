@@ -9,7 +9,7 @@ from typing import Tuple
 from .exceptions import InternalError
 
 # Expected API version matching re_core.h
-EXPECTED_API_VERSION = 100
+EXPECTED_API_VERSION = 200
 
 def _get_dll_path() -> str:
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -71,7 +71,12 @@ def load_dll() -> ctypes.CDLL:
         're_create_property', 're_update_property', 're_get_properties', 
         're_get_property', 're_archive_property', 're_restore_property',
         're_get_report', 're_get_statistics', 're_get_dashboard', 're_ping',
-        're_has_any_user', 're_create_initial_admin', 're_change_password'
+        're_has_any_user', 're_create_initial_admin', 're_change_password',
+        # User Management (RBAC)
+        're_get_users', 're_create_user', 're_change_user_role',
+        're_reset_user_password', 're_toggle_user_status',
+        # Hardening
+        're_log_audit'
     ]
 
     for ep in endpoints:

@@ -18,8 +18,10 @@ class AuthenticationError(REException): pass
 class LockedError(REException): pass
 class ForbiddenError(REException): pass
 class DatabaseError(REException): pass
+class SessionExpiredError(REException): pass
 class BusyError(REException): pass
 class CorruptError(REException): pass
+class LastAdminError(REException): pass
 class MemoryError(REException): pass
 class InternalError(REException): pass
 class NotImplementedError(REException): pass
@@ -41,10 +43,14 @@ def check_error(code: int, details: str = "") -> None:
         raise ForbiddenError("Access forbidden.", code, details)
     elif code == -7:
         raise DatabaseError("Database error occurred.", code, details)
+    elif code == -8:
+        raise SessionExpiredError("Session has expired.", code, details)
     elif code == -10:
         raise BusyError("Database is busy.", code, details)
     elif code == -11:
         raise CorruptError("Database is corrupt.", code, details)
+    elif code == -12:
+        raise LastAdminError("Cannot modify the last admin account.", code, details)
     elif code == -98:
         raise MemoryError("Out of memory in DLL.", code, details)
     elif code == -100:

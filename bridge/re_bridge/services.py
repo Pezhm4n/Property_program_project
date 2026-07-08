@@ -28,12 +28,11 @@ def re_close() -> None:
 
 class AuthService:
     @staticmethod
-    def login(req: LoginRequest) -> LoginResponse:
+    def login(req: LoginRequest) -> dict:
         req_json = json.dumps(req.to_dict())
         rc, res_json = call_dll_endpoint('re_login', req_json)
         check_error(rc)
-        data = json.loads(res_json)
-        return LoginResponse(token=data.get('token', ''))
+        return json.loads(res_json)
         
     @staticmethod
     def logout(token: str) -> None:
@@ -273,6 +272,20 @@ class ReportService:
             c.drawString(30, 30, reshape_text(f"گزارش جامع املاک | صفحه {page_idx + 1} از {len(chunks)}"))
             
         c.save()
+        
+        # Log export PDF action
+        try:
+            payload = {
+                "token": token,
+                "action": "EXPORT_PDF",
+                "entity": "reports",
+                "entity_id": 0,
+                "old_values": "{}",
+                "new_values": json.dumps({"dest_file": os.path.basename(dest_path)})
+            }
+            call_dll_endpoint('re_log_audit', json.dumps(payload))
+        except Exception:
+            pass
 
     @staticmethod
     def export_properties_excel(token: str, dest_path: str) -> None:
@@ -342,6 +355,20 @@ class ReportService:
             
         workbook.close()
 
+        # Log export Excel action
+        try:
+            payload = {
+                "token": token,
+                "action": "EXPORT_EXCEL",
+                "entity": "reports",
+                "entity_id": 0,
+                "old_values": "{}",
+                "new_values": json.dumps({"dest_file": os.path.basename(dest_path)})
+            }
+            call_dll_endpoint('re_log_audit', json.dumps(payload))
+        except Exception:
+            pass
+
 class BackupService:
     @staticmethod
     def create_backup(token: str, dest_path: str) -> str:
@@ -350,12 +377,69 @@ class BackupService:
             shutil.copy2(_current_db_path, dest_path)
         finally:
             re_init(_current_db_path)
+            
+        # Write sidecar JSON metadata
+        import datetime
+        metadata = {
+            "app_version": "2.0.0",
+            "schema_version": 5,
+            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "created_by": "system"
+        }
+        
+        # Write sidecar JSON file
+        try:
+            with open(dest_path + ".json", 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, indent=4)
+        except Exception:
+            pass
+
+        # Log backup event
+        try:
+            payload = {
+                "token": token,
+                "action": "BACKUP",
+                "entity": "database",
+                "entity_id": 0,
+                "old_values": "{}",
+                "new_values": json.dumps({"backup_file": os.path.basename(dest_path)})
+            }
+            call_dll_endpoint('re_log_audit', json.dumps(payload))
+        except Exception:
+            pass
+
         return dest_path
 
     @staticmethod
     def restore_backup(token: str, src_path: str) -> None:
         if not os.path.exists(src_path):
             raise FileNotFoundError("فایل بکاپ یافت نشد.")
+            
+        # Verify JSON sidecar metadata compatibility
+        metadata_path = src_path + ".json"
+        if not os.path.exists(metadata_path):
+            raise ValueError("فایل متادیتای بکاپ (.json) یافت نشد.")
+            
+        try:
+            with open(metadata_path, 'r', encoding='utf-8') as f:
+                meta = json.load(f)
+        except Exception as e:
+            raise ValueError(f"خواندن متادیتای بکاپ ناموفق بود: {str(e)}")
+            
+        # Check compatibility: Mismatched major version
+        app_version = "2.0.0"
+        backup_version = meta.get("app_version", "0.0.0")
+        
+        try:
+            app_major = int(app_version.split('.')[0])
+            backup_major = int(str(backup_version).split('.')[0])
+        except (ValueError, IndexError, TypeError):
+            raise ValueError("فرمت نسخه پشتیبان نامعتبر است.")
+            
+        if backup_major > app_major:
+            raise ValueError(f"نسخه بکاپ ({backup_version}) جدیدتر از نسخه نرم‌افزار ({app_version}) است.")
+        if backup_major < app_major:
+            raise ValueError(f"نسخه بکاپ ({backup_version}) قدیمی و ناسازگار با نسخه نرم‌افزار ({app_version}) است.")
             
         # Verify integrity of backup database before replacing
         import sqlite3
@@ -383,3 +467,55 @@ class BackupService:
             shutil.copy2(src_path, _current_db_path)
         finally:
             re_init(_current_db_path)
+
+        # Log restore event
+        try:
+            payload = {
+                "token": token,
+                "action": "RESTORE_DATABASE",
+                "entity": "database",
+                "entity_id": 0,
+                "old_values": "{}",
+                "new_values": json.dumps({"restore_file": os.path.basename(src_path)})
+            }
+            call_dll_endpoint('re_log_audit', json.dumps(payload))
+        except Exception:
+            pass
+
+class UserManagementService:
+    @staticmethod
+    def get_all_users(token: str) -> list:
+        req_json = json.dumps({"token": token})
+        rc, res_json = call_dll_endpoint('re_get_users', req_json)
+        check_error(rc)
+        data = json.loads(res_json)
+        return data.get('users', [])
+
+    @staticmethod
+    def create_user(token: str, user_data: dict) -> dict:
+        payload = {"token": token, "user": user_data}
+        req_json = json.dumps(payload)
+        rc, res_json = call_dll_endpoint('re_create_user', req_json)
+        check_error(rc)
+        return json.loads(res_json)
+
+    @staticmethod
+    def change_role(token: str, user_id: int, new_role_id: int) -> None:
+        payload = {"token": token, "user_id": user_id, "new_role_id": new_role_id}
+        req_json = json.dumps(payload)
+        rc, _ = call_dll_endpoint('re_change_user_role', req_json)
+        check_error(rc)
+
+    @staticmethod
+    def reset_password(token: str, user_id: int, new_password: str) -> None:
+        payload = {"token": token, "user_id": user_id, "new_password": new_password}
+        req_json = json.dumps(payload)
+        rc, _ = call_dll_endpoint('re_reset_user_password', req_json)
+        check_error(rc)
+
+    @staticmethod
+    def toggle_status(token: str, user_id: int, enable: bool) -> None:
+        payload = {"token": token, "user_id": user_id, "enable": enable}
+        req_json = json.dumps(payload)
+        rc, _ = call_dll_endpoint('re_toggle_user_status', req_json)
+        check_error(rc)

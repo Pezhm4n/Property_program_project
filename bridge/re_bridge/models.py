@@ -11,6 +11,59 @@ class LoginRequest:
 @dataclass
 class LoginResponse:
     token: str
+    user_id: int = 0
+    username: str = ""
+    role: str = ""
+    role_id: int = 0
+    first_name: str = ""
+    last_name: str = ""
+    permissions: list = None
+
+    def __post_init__(self):
+        if self.permissions is None:
+            self.permissions = []
+
+class SessionManager:
+    """Holds the authenticated session state including RBAC permissions."""
+    
+    def __init__(self):
+        self.token = None
+        self.user_id = 0
+        self.username = ""
+        self.role = ""
+        self.role_id = 0
+        self.first_name = ""
+        self.last_name = ""
+        self.permissions = []
+    
+    def login(self, response_data: dict):
+        """Populate session from login response."""
+        self.token = response_data.get("token", "")
+        self.user_id = int(response_data.get("user_id", 0))
+        self.username = response_data.get("username", "")
+        self.role = response_data.get("role", "")
+        self.role_id = int(response_data.get("role_id", 0))
+        self.first_name = response_data.get("first_name", "")
+        self.last_name = response_data.get("last_name", "")
+        self.permissions = response_data.get("permissions", [])
+    
+    def logout(self):
+        """Clear the session."""
+        self.token = None
+        self.user_id = 0
+        self.username = ""
+        self.role = ""
+        self.role_id = 0
+        self.first_name = ""
+        self.last_name = ""
+        self.permissions = []
+    
+    def has_permission(self, permission_name: str) -> bool:
+        """Check if the current session has a specific permission."""
+        return permission_name in self.permissions
+    
+    def is_logged_in(self) -> bool:
+        return self.token is not None and len(self.token) > 0
 
 @dataclass
 class PropertyDTO:

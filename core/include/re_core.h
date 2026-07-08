@@ -164,6 +164,18 @@ RE_API int re_validate_session(const char* request_json, char** response_json_ou
  */
 RE_API int re_ping(const char* request_json, char** response_json_out);
 
+RE_API int re_has_any_user(const char* request_json, char** response_json_out);
+RE_API int re_create_initial_admin(const char* request_json, char** response_json_out);
+RE_API int re_change_password(const char* request_json, char** response_json_out);
+
+/* User Management (Admin-only, RBAC-enforced) */
+RE_API int re_get_users(const char* request_json, char** response_json_out);
+RE_API int re_create_user(const char* request_json, char** response_json_out);
+RE_API int re_change_user_role(const char* request_json, char** response_json_out);
+RE_API int re_reset_user_password(const char* request_json, char** response_json_out);
+RE_API int re_toggle_user_status(const char* request_json, char** response_json_out);
+RE_API int re_log_audit(const char* request_json, char** response_json_out);
+
 #ifdef __cplusplus
 }
 #endif

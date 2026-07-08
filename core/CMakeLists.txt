@@ -64,6 +64,11 @@ else()
     target_link_libraries(re_core PRIVATE cjson)
 endif()
 
+# Windows CryptoAPI for secure token generation (CryptGenRandom)
+if(WIN32)
+    target_link_libraries(re_core PRIVATE advapi32)
+endif()
+
 # Optional: Enable testing
 enable_testing()
 # Test executables will be added here
