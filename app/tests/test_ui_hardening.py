@@ -77,6 +77,17 @@ def test_backup_restore_integrity_check(tmp_path):
     bad_backup_path = tmp_path / "corrupted_backup.db"
     bad_backup_path.write_text("THIS IS NOT A SQLITE DATABASE FILE")
 
+    # Write compatible sidecar JSON
+    import json
+    meta = {
+        "app_version": "2.0.0",
+        "schema_version": 5,
+        "created_at": "2026-01-01 00:00:00",
+        "created_by": "system"
+    }
+    with open(str(bad_backup_path) + ".json", 'w', encoding='utf-8') as f:
+        json.dump(meta, f)
+
     # Restoring from this file should raise a ValueError
     from re_bridge.services import BackupService
     with pytest.raises(ValueError) as excinfo:
@@ -90,7 +101,7 @@ def test_property_archive_restore_search_filtering():
     # 2. Login to get token
     from re_bridge.models import LoginRequest
     resp = AuthService.login(LoginRequest(username="test_user_filtering", password="password123"))
-    token = resp.token
+    token = resp["token"]
     
     # 3. Create properties DTO
     from re_bridge.models import PropertyDTO, SearchState
@@ -151,3 +162,139 @@ def test_property_archive_restore_search_filtering():
     properties = PropertyService.get_properties(token, search_state)
     assert len(properties) == 1
     assert properties[0].is_archived is False
+
+def test_national_id_phone_validators():
+    # Setup initial admin
+    AuthService.create_initial_admin("validation_admin", "password123")
+    from re_bridge.models import LoginRequest
+    resp = AuthService.login(LoginRequest(username="validation_admin", password="password123"))
+    token = resp["token"]
+    
+    from re_bridge.services import UserManagementService
+    
+    # 1. Invalid phone format -> ValidationError
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "agent_test1",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "0063812738", # mathematically valid
+            "phone": "08123456789", # invalid phone (starts with 08 instead of 09)
+            "role_id": 2
+        })
+
+    # 2. Invalid National ID checksum -> ValidationError
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "agent_test2",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "1234567890", # invalid checksum
+            "phone": "09123456789",
+            "role_id": 2
+        })
+
+    # 3. Repetitive National ID (e.g. 1111111111) -> ValidationError
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "agent_test3",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "1111111111", # repetitive
+            "phone": "09123456789",
+            "role_id": 2
+        })
+
+    # 4. Valid User creation -> Success
+    user_data = {
+        "username": "agent_test4",
+        "password": "password123",
+        "first_name": "تست",
+        "last_name": "کاربر",
+        "national_id": "0063812738", # mathematically valid
+        "phone": "09123456789",
+        "role_id": 2
+    }
+    user_created = UserManagementService.create_user(token, user_data)
+    assert user_created["id"] > 0
+
+def test_username_validators():
+    # Setup initial admin
+    AuthService.create_initial_admin("username_admin", "password123")
+    from re_bridge.models import LoginRequest
+    resp = AuthService.login(LoginRequest(username="username_admin", password="password123"))
+    token = resp["token"]
+    
+    from re_bridge.services import UserManagementService
+
+    # 1. Reserved username "root" -> ValidationError
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "root",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "0063812738",
+            "phone": "09123456789",
+            "role_id": 2
+        })
+
+    # 2. Reserved username "system" -> ValidationError
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "system",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "0063812738",
+            "phone": "09123456789",
+            "role_id": 2
+        })
+
+    # 3. Reserved username "admin" -> ValidationError (cannot create another admin username)
+    with pytest.raises(ValidationError):
+        UserManagementService.create_user(token, {
+            "username": "admin",
+            "password": "password123",
+            "first_name": "تست",
+            "last_name": "کاربر",
+            "national_id": "0063812738",
+            "phone": "09123456789",
+            "role_id": 2
+        })
+
+def test_backup_metadata_sidecar(tmp_path):
+    # Setup initial admin & login
+    AuthService.create_initial_admin("backup_admin", "password123")
+    from re_bridge.models import LoginRequest
+    resp = AuthService.login(LoginRequest(username="backup_admin", password="password123"))
+    token = resp["token"]
+    
+    backup_file = str(tmp_path / "test_backup_sidecar.db")
+    
+    from re_bridge.services import BackupService
+    # Create backup
+    BackupService.create_backup(token, backup_file)
+    
+    # Assert backup files exist
+    assert os.path.exists(backup_file)
+    assert os.path.exists(backup_file + ".json")
+    
+    # Read sidecar JSON file and verify fields
+    import json
+    with open(backup_file + ".json", 'r', encoding='utf-8') as f:
+        meta = json.load(f)
+    assert meta["app_version"] == "2.0.0"
+    assert meta["schema_version"] == 5
+    
+    # Attempt to restore incompatible metadata (e.g. app version major mismatch)
+    meta["app_version"] = "3.0.0"
+    with open(backup_file + ".json", 'w', encoding='utf-8') as f:
+        json.dump(meta, f, indent=4)
+        
+    with pytest.raises(ValueError) as excinfo:
+        BackupService.restore_backup(token, backup_file)
+    assert "جدیدتر از نسخه نرم‌افزار" in str(excinfo.value)

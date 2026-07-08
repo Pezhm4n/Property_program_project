@@ -38,12 +38,20 @@ int db_map_error(int sqlite_err) {
 int db_execute(const char* sql) {
     if (!g_db) return -99; // RE_ERR_INTERNAL
 
-    char* err_msg = NULL;
-    int rc = sqlite3_exec(g_db, sql, 0, 0, &err_msg);
-    
-    if (rc != SQLITE_OK) {
-        // In a full implementation, err_msg should be logged here.
-        sqlite3_free(err_msg);
+    int rc = SQLITE_BUSY;
+    int retries[] = {100, 200, 400};
+    for (int i = 0; i < 4; ++i) {
+        char* err_msg = NULL;
+        rc = sqlite3_exec(g_db, sql, 0, 0, &err_msg);
+        if (rc != SQLITE_OK) {
+            if (err_msg) sqlite3_free(err_msg);
+        }
+        if (rc != SQLITE_BUSY && rc != SQLITE_LOCKED) {
+            break;
+        }
+        if (i < 3) {
+            sqlite3_sleep(retries[i]);
+        }
     }
     return db_map_error(rc);
 }
@@ -80,7 +88,18 @@ sqlite3* db_get_connection() {
 
 int db_prepare(const char* sql, sqlite3_stmt** out_stmt) {
     if (!g_db) return -99; // RE_ERR_INTERNAL
-    int rc = sqlite3_prepare_v2(g_db, sql, -1, out_stmt, 0);
+    
+    int rc = SQLITE_BUSY;
+    int retries[] = {100, 200, 400};
+    for (int i = 0; i < 4; ++i) {
+        rc = sqlite3_prepare_v2(g_db, sql, -1, out_stmt, 0);
+        if (rc != SQLITE_BUSY && rc != SQLITE_LOCKED) {
+            break;
+        }
+        if (i < 3) {
+            sqlite3_sleep(retries[i]);
+        }
+    }
     return db_map_error(rc);
 }
 
