@@ -81,13 +81,26 @@ class ChangePasswordDialog(QDialog):
         new_pw = self.txt_new.text()
         confirm = self.txt_confirm.text()
         
+        default_style = ""
+        error_style = "border: 1.5px solid #ef4444; background-color: #fef2f2;"
+        
+        self.txt_current.setStyleSheet(default_style)
+        self.txt_new.setStyleSheet(default_style)
+        self.txt_confirm.setStyleSheet(default_style)
+        
         if not current_pw or not new_pw or not confirm:
+            if not current_pw: self.txt_current.setStyleSheet(error_style)
+            if not new_pw: self.txt_new.setStyleSheet(error_style)
+            if not confirm: self.txt_confirm.setStyleSheet(error_style)
             QMessageBox.warning(self, "خطا", "تکمیل تمام فیلدها الزامی است.")
             return
         if len(new_pw) < 6:
+            self.txt_new.setStyleSheet(error_style)
             QMessageBox.warning(self, "خطا", "رمز عبور جدید باید حداقل ۶ کاراکتر باشد.")
             return
         if new_pw != confirm:
+            self.txt_new.setStyleSheet(error_style)
+            self.txt_confirm.setStyleSheet(error_style)
             QMessageBox.warning(self, "خطا", "رمز عبور جدید و تکرار آن همخوانی ندارند.")
             return
             
@@ -97,10 +110,11 @@ class ChangePasswordDialog(QDialog):
                 QMessageBox.information(self, "موفقیت", "رمز عبور با موفقیت تغییر یافت.")
                 self.accept()
             else:
+                self.txt_current.setStyleSheet(error_style)
                 QMessageBox.critical(self, "خطا", "تغییر رمز عبور با خطا مواجه شد.")
         except Exception as e:
-            # Check for incorrect credentials exception
             error_str = str(e)
+            self.txt_current.setStyleSheet(error_style)
             if "Authentication failed" in error_str or "RE_ERR_AUTH" in error_str:
                 QMessageBox.critical(self, "خطا", "رمز عبور فعلی وارد شده نادرست است.")
             else:

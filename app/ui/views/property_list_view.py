@@ -176,14 +176,9 @@ class PropertyListView(QWidget):
         return self.model.get_property_at(indexes[0].row())
 
     def add_property(self):
-        dlg = PropertyDialog(self)
+        dlg = PropertyDialog(self, token=self.session.session_token)
         if dlg.exec():
-            dto = dlg.get_dto()
-            try:
-                PropertyService.create_property(self.session.session_token, dto)
-                self.refresh_data()
-            except Exception as e:
-                show_error_dialog(self, e)
+            self.refresh_data()
 
     def edit_property(self):
         prop = self.get_selected_property()
@@ -191,14 +186,9 @@ class PropertyListView(QWidget):
             QMessageBox.warning(self, "خطا", "لطفاً یک ملک را انتخاب کنید.")
             return
             
-        dlg = PropertyDialog(self, prop)
+        dlg = PropertyDialog(self, prop, token=self.session.session_token)
         if dlg.exec():
-            dto = dlg.get_dto()
-            try:
-                PropertyService.update_property(self.session.session_token, prop.id, dto)
-                self.refresh_data()
-            except Exception as e:
-                show_error_dialog(self, e)
+            self.refresh_data()
 
     def archive_property(self):
         prop = self.get_selected_property()

@@ -24,28 +24,21 @@ class SkeletonChart(QWidget):
         
         is_empty = not self.data or all(v == 0 for v in self.data)
         if is_empty:
-            text_color = QColor("#64748b")
-            painter.setPen(text_color)
-            painter.setFont(self.font())
-            
-            from bidi.algorithm import get_display
-            import arabic_reshaper
-            empty_text = get_display(arabic_reshaper.reshape("داده‌ای برای نمایش وجود ندارد."))
-            
-            rect = painter.fontMetrics().boundingRect(empty_text)
-            text_width = rect.width()
-            text_height = rect.height()
-            painter.drawText(int((width - text_width) / 2), int((height - text_height) / 2) + 15, empty_text)
-            
+            empty_text = "داده‌ای برای نمایش وجود ندارد."
             icon = "📊"
+            
+            # Draw Icon
             font_icon = self.font()
             font_icon.setPointSize(24)
             painter.setFont(font_icon)
-            icon_text = get_display(arabic_reshaper.reshape(icon))
-            icon_rect = painter.fontMetrics().boundingRect(icon_text)
-            icon_w = icon_rect.width()
-            icon_h = icon_rect.height()
-            painter.drawText(int((width - icon_w) / 2), int((height - icon_h) / 2) - 15, icon_text)
+            painter.setPen(QColor("#38bdf8"))
+            painter.drawText(0, 0, width, height - 40, Qt.AlignmentFlag.AlignCenter, icon)
+            
+            # Draw Text
+            painter.setFont(self.font())
+            text_color = QColor("#64748b")
+            painter.setPen(text_color)
+            painter.drawText(0, 0, width, height + 40, Qt.AlignmentFlag.AlignCenter, empty_text)
             return
             
         # Background Grid Lines

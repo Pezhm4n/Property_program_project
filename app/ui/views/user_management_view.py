@@ -12,11 +12,12 @@ from ui.dialogs import show_error_dialog
 
 
 class CreateUserDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, token=None):
         super().__init__(parent)
         self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle("ایجاد کاربر جدید")
         self.resize(400, 360)
+        self.token = token
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -60,6 +61,74 @@ class CreateUserDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
+    def validate_fields(self) -> list:
+        default_style = ""
+        error_style = "border: 1.5px solid #ef4444; background-color: #fef2f2;"
+        
+        self.txt_username.setStyleSheet(default_style)
+        self.txt_password.setStyleSheet(default_style)
+        self.txt_first_name.setStyleSheet(default_style)
+        self.txt_last_name.setStyleSheet(default_style)
+        self.txt_national_id.setStyleSheet(default_style)
+        self.txt_phone.setStyleSheet(default_style)
+        
+        username = self.txt_username.text().strip()
+        password = self.txt_password.text().strip()
+        first_name = self.txt_first_name.text().strip()
+        last_name = self.txt_last_name.text().strip()
+        national_id = self.txt_national_id.text().strip()
+        phone = self.txt_phone.text().strip()
+        
+        errors = []
+        if len(username) < 3:
+            self.txt_username.setStyleSheet(error_style)
+            errors.append("نام کاربری باید حداقل ۳ کاراکتر باشد.")
+            
+        if len(password) < 6:
+            self.txt_password.setStyleSheet(error_style)
+            errors.append("رمز عبور باید حداقل ۶ کاراکتر باشد.")
+            
+        if not first_name:
+            self.txt_first_name.setStyleSheet(error_style)
+            errors.append("نام نمی‌تواند خالی باشد.")
+            
+        if not last_name:
+            self.txt_last_name.setStyleSheet(error_style)
+            errors.append("نام خانوادگی نمی‌تواند خالی باشد.")
+            
+        if len(national_id) != 10 or not national_id.isdigit():
+            self.txt_national_id.setStyleSheet(error_style)
+            errors.append("کد ملی باید دقیقاً ۱۰ رقم عددی باشد.")
+            
+        if len(phone) != 11 or not phone.startswith("09") or not phone.isdigit():
+            self.txt_phone.setStyleSheet(error_style)
+            errors.append("شماره تلفن همراه باید ۱۱ رقم بوده و با ۰۹ شروع شود.")
+            
+        return errors
+
+    def accept(self):
+        errors = self.validate_fields()
+        if errors:
+            QMessageBox.warning(self, "خطای اعتبارسنجی", "\n".join(errors))
+            return
+            
+        if self.token:
+            from ui.dialogs import show_error_dialog
+            user_data = self.get_user_data()
+            try:
+                UserManagementService.create_user(self.token, user_data)
+            except Exception as e:
+                # If there's a validation (-1) or duplicate (-3) error, highlight
+                if hasattr(e, 'code') and e.code in (-1, -3):
+                    error_style = "border: 1.5px solid #ef4444; background-color: #fef2f2;"
+                    self.txt_username.setStyleSheet(error_style)
+                    self.txt_national_id.setStyleSheet(error_style)
+                    self.txt_phone.setStyleSheet(error_style)
+                show_error_dialog(self, e)
+                return
+                
+        super().accept()
+
     def get_user_data(self) -> dict:
         return {
             "username": self.txt_username.text().strip(),
@@ -73,11 +142,13 @@ class CreateUserDialog(QDialog):
 
 
 class ResetPasswordDialog(QDialog):
-    def __init__(self, username, parent=None):
+    def __init__(self, username, parent=None, token=None, user_id=None):
         super().__init__(parent)
         self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle(f"ریست رمز عبور: {username}")
         self.resize(350, 150)
+        self.token = token
+        self.user_id = user_id
 
         layout = QVBoxLayout(self)
         form = QFormLayout()
@@ -94,6 +165,24 @@ class ResetPasswordDialog(QDialog):
 
     def get_password(self) -> str:
         return self.txt_new_password.text().strip()
+
+    def accept(self):
+        new_pw = self.get_password()
+        if len(new_pw) < 6:
+            self.txt_new_password.setStyleSheet("border: 1.5px solid #ef4444; background-color: #fef2f2;")
+            QMessageBox.warning(self, "خطا", "رمز عبور باید حداقل ۶ کاراکتر باشد.")
+            return
+            
+        if self.token and self.user_id:
+            from ui.dialogs import show_error_dialog
+            try:
+                UserManagementService.reset_password(self.token, self.user_id, new_pw)
+                QMessageBox.information(self, "موفق", "رمز عبور با موفقیت تغییر کرد.")
+            except Exception as e:
+                show_error_dialog(self, e)
+                return
+                
+        super().accept()
 
 
 class UserManagementView(QWidget):
@@ -126,6 +215,8 @@ class UserManagementView(QWidget):
             "نام کاربری", "نقش", "وضعیت", "آخرین ورود", "تاریخ ایجاد", "تلفن", "عملیات"
         ])
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(6, 240)
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         layout.addWidget(self.table)
@@ -187,14 +278,9 @@ class UserManagementView(QWidget):
             show_error_dialog(self, e)
 
     def create_user(self):
-        dialog = CreateUserDialog(self)
+        dialog = CreateUserDialog(self, token=self.session.session_token)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            user_data = dialog.get_user_data()
-            try:
-                UserManagementService.create_user(self.session.session_token, user_data)
-                self.refresh_data()
-            except Exception as e:
-                show_error_dialog(self, e)
+            self.refresh_data()
 
     def toggle_user(self, user_id, currently_disabled):
         try:
@@ -204,17 +290,8 @@ class UserManagementView(QWidget):
             show_error_dialog(self, e)
 
     def reset_password(self, user_id, username):
-        dialog = ResetPasswordDialog(username, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            new_pw = dialog.get_password()
-            if len(new_pw) < 6:
-                QMessageBox.warning(self, "خطا", "رمز عبور باید حداقل ۶ کاراکتر باشد.")
-                return
-            try:
-                UserManagementService.reset_password(self.session.session_token, user_id, new_pw)
-                QMessageBox.information(self, "موفق", "رمز عبور با موفقیت تغییر کرد.")
-            except Exception as e:
-                show_error_dialog(self, e)
+        dialog = ResetPasswordDialog(username, self, token=self.session.session_token, user_id=user_id)
+        dialog.exec()
 
     def change_role(self, user_id, current_role_id):
         new_role_id = 1 if current_role_id == 2 else 2

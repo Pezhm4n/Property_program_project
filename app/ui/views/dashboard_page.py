@@ -64,16 +64,16 @@ class DashboardPage(QWidget):
         charts_layout = QHBoxLayout()
         charts_layout.setSpacing(12)
         self.sales_chart = ChartWidget("روند معاملات فروش (ماهانه)", "bar", self)
-        self.sales_chart.setMinimumHeight(240)
+        self.sales_chart.setMinimumHeight(350)
         self.rents_chart = ChartWidget("روند معاملات اجاره (ماهانه)", "line", self)
-        self.rents_chart.setMinimumHeight(240)
+        self.rents_chart.setMinimumHeight(350)
         charts_layout.addWidget(self.sales_chart)
         charts_layout.addWidget(self.rents_chart)
         scroll_layout.addLayout(charts_layout)
         
         # Recent Activity Widget
         self.activity_widget = RecentActivityWidget(self)
-        self.activity_widget.setFixedHeight(220)
+        self.activity_widget.setFixedHeight(250)
         scroll_layout.addWidget(self.activity_widget)
         
         scroll.setWidget(scroll_content)

@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from re_bridge.models import PropertyDTO
 
 class PropertyDialog(QDialog):
-    def __init__(self, parent=None, property_dto=None):
+    def __init__(self, parent=None, property_dto=None, token=None):
         super().__init__(parent)
         self.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
         self.setWindowTitle("ثبت / ویرایش ملک")
@@ -15,6 +15,7 @@ class PropertyDialog(QDialog):
         self.property_id = None
         self.is_archived = False
         self.original_dto = property_dto
+        self.token = token
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -105,6 +106,54 @@ class PropertyDialog(QDialog):
         self.spn_deposit.setValue(dto.rent_deposit)
         self.spn_rent.setValue(dto.rent_monthly)
         
+    def validate_fields(self) -> list:
+        default_style = ""
+        error_style = "border: 1.5px solid #ef4444; background-color: #fef2f2;"
+        
+        self.txt_city.setStyleSheet(default_style)
+        self.txt_address.setStyleSheet(default_style)
+        self.txt_phone.setStyleSheet(default_style)
+        self.spn_area.setStyleSheet(default_style)
+        self.spn_sale.setStyleSheet(default_style)
+        self.spn_deposit.setStyleSheet(default_style)
+        self.spn_rent.setStyleSheet(default_style)
+        
+        city = self.txt_city.text().strip()
+        address = self.txt_address.text().strip()
+        phone = self.txt_phone.text().strip()
+        
+        errors = []
+        if not city:
+            self.txt_city.setStyleSheet(error_style)
+            errors.append("نام شهر نمی‌تواند خالی باشد.")
+            
+        if not address:
+            self.txt_address.setStyleSheet(error_style)
+            errors.append("آدرس ملک نمی‌تواند خالی باشد.")
+            
+        if not phone:
+            self.txt_phone.setStyleSheet(error_style)
+            errors.append("شماره تماس مالک نمی‌تواند خالی باشد.")
+        elif len(phone) != 11 or not phone.startswith("09") or not phone.isdigit():
+            self.txt_phone.setStyleSheet(error_style)
+            errors.append("شماره تماس باید ۱۱ رقم بوده و با ۰۹ شروع شود.")
+            
+        if self.spn_area.value() <= 0:
+            self.spn_area.setStyleSheet(error_style)
+            errors.append("متراژ ملک باید بیشتر از صفر باشد.")
+            
+        ltype = self.cmb_listing_type.currentText()
+        if ltype == "فروش" and self.spn_sale.value() <= 0:
+            self.spn_sale.setStyleSheet(error_style)
+            errors.append("برای آگهی فروش، قیمت فروش باید بیشتر از صفر باشد.")
+            
+        if (ltype == "اجاره" or ltype == "رهن") and (self.spn_deposit.value() <= 0 and self.spn_rent.value() <= 0):
+            self.spn_deposit.setStyleSheet(error_style)
+            self.spn_rent.setStyleSheet(error_style)
+            errors.append("برای آگهی رهن/اجاره، مبلغ رهن یا اجاره باید بیشتر از صفر باشد.")
+            
+        return errors
+
     def accept(self):
         # 1. Strip input strings
         city = self.txt_city.text().strip()
@@ -116,32 +165,32 @@ class PropertyDialog(QDialog):
         self.txt_address.setText(address)
         self.txt_phone.setText(phone)
         
-        # 2. Check for empty fields
-        from ui.dialogs import show_error_dialog
-        if not city:
-            show_error_dialog(self, ValueError("لطفاً نام شهر را وارد کنید."))
-            return
-        if not address:
-            show_error_dialog(self, ValueError("لطفاً آدرس ملک را وارد کنید."))
-            return
-        if not phone:
-            show_error_dialog(self, ValueError("لطفاً شماره تماس مالک را وارد کنید."))
+        # 2. Inline client-side validations
+        errors = self.validate_fields()
+        if errors:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "خطای اعتبارسنجی", "\n".join(errors))
             return
             
-        # 3. Validate phone format (starts with 09, 11 digits)
-        if len(phone) != 11 or not phone.startswith("09") or not phone.isdigit():
-            show_error_dialog(self, ValueError("شماره تماس معتبر نیست. باید ۱۱ رقم بوده و با ۰۹ شروع شود."))
-            return
-            
-        # 4. Check listing pricing rules
-        ltype = self.cmb_listing_type.currentText()
-        if ltype == "فروش" and self.spn_sale.value() <= 0:
-            show_error_dialog(self, ValueError("برای آگهی فروش، قیمت فروش باید بیشتر از صفر باشد."))
-            return
-        if (ltype == "اجاره" or ltype == "رهن") and (self.spn_deposit.value() <= 0 and self.spn_rent.value() <= 0):
-            show_error_dialog(self, ValueError("برای آگهی رهن/اجاره، مبلغ رهن یا اجاره باید بیشتر از صفر باشد."))
-            return
-            
+        # 3. Try saving to DB inside accept() to preserve inputs on failure
+        if self.token:
+            from re_bridge.services import PropertyService
+            from ui.dialogs import show_error_dialog
+            dto = self.get_dto()
+            try:
+                if self.property_id:
+                    PropertyService.update_property(self.token, self.property_id, dto)
+                else:
+                    PropertyService.create_property(self.token, dto)
+            except Exception as e:
+                # Highlight inputs if it is validation (-1) or duplicate (-3) error
+                if hasattr(e, 'code') and e.code in (-1, -3):
+                    error_style = "border: 1.5px solid #ef4444; background-color: #fef2f2;"
+                    self.txt_phone.setStyleSheet(error_style)
+                    self.txt_address.setStyleSheet(error_style)
+                show_error_dialog(self, e)
+                return  # Stay open!
+                
         super().accept()
 
     def get_dto(self) -> PropertyDTO:
