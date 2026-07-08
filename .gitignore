@@ -17,3 +17,11 @@ venv/
 *.exe
 .idea/
 .vscode/
+
+*.xlsx
+
+*.pdf
+
+*.db-shm
+
+*.db-wal
