@@ -32,7 +32,8 @@ def main():
     # Initialize Core DLL Database and Migrations
     from re_bridge.services import re_init, re_close
     db_path = nav.session.get_db_path()
-    re_init(db_path, "core/migrations")
+    migrations_path = ResourceManager.resolve_path(os.path.join("core", "migrations"))
+    re_init(db_path, migrations_path)
     nav.show_login()
     
     try:

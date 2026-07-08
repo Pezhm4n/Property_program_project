@@ -67,6 +67,10 @@ endif()
 # Windows CryptoAPI for secure token generation (CryptGenRandom)
 if(WIN32)
     target_link_libraries(re_core PRIVATE advapi32)
+    # Statically link runtime libraries for MinGW to avoid MSYS2 DLL dependencies
+    if(NOT MSVC)
+        target_link_options(re_core PRIVATE -static-libgcc -static)
+    endif()
 endif()
 
 # Optional: Enable testing

@@ -3,7 +3,8 @@ import os
 class ThemeManager:
     def __init__(self):
         self.current_theme = "dark"
-        self.styles_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'resources', 'styles')
+        from core.resource_manager import ResourceManager
+        self.styles_dir = ResourceManager.resolve_path(os.path.join('app', 'resources', 'styles'))
 
     def apply_theme(self, app, theme_name="dark"):
         self.current_theme = theme_name

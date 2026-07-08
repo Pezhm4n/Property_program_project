@@ -12,6 +12,11 @@ from .exceptions import InternalError
 EXPECTED_API_VERSION = 200
 
 def _get_dll_path() -> str:
+    if getattr(sys, 'frozen', False):
+        # We are running inside a packaged PyInstaller executable.
+        # The DLL is extracted to the root of sys._MEIPASS.
+        return os.path.join(sys._MEIPASS, 're_core.dll')
+        
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if sys.platform == 'win32':
         return os.path.join(base_dir, 'core', 'build', 're_core.dll')
