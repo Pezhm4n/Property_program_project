@@ -28,7 +28,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libcjson-dev libsqlite3-dev
+        sudo apt-get install -y libcjson-dev libsqlite3-dev libegl1 libgl1 libxkbcommon0 libdbus-1-3 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 libxcb-xfixes0 x11-utils xvfb
 
     - name: Install Dependencies (Windows)
       if: matrix.os == 'windows-latest'
@@ -58,5 +58,9 @@ jobs:
         cd core/build
         ctest -C Release --output-on-failure
         cd ../../
-        pytest app/tests bridge/tests
-      continue-on-error: true
+        if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+          xvfb-run pytest app/tests bridge/tests
+        else
+          pytest app/tests bridge/tests
+        fi
+      shell: bash
