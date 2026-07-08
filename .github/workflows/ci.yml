@@ -24,6 +24,12 @@ jobs:
         python-version: '3.11'
         cache: 'pip'
 
+    - name: Install Dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcjson-dev libsqlite3-dev
+
     - name: Configure CMake
       run: cmake -S core -B core/build
 
