@@ -11,7 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-static __thread int last_error = 0;
+#if defined(_MSC_VER)
+#define THREAD_LOCAL __declspec(thread)
+#else
+#define THREAD_LOCAL __thread
+#endif
+
+static THREAD_LOCAL int last_error = 0;
 
 RE_API int re_get_api_version() {
     return 200; // 2.0.0 — RBAC release

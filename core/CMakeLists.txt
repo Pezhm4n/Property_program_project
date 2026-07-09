@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # Enable Warnings Policy based on Coding Standards
 if(MSVC)
     add_compile_options(/W4 /WX) # /WX treats warnings as errors
-    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_DEPRECATE _CRT_SECURE_NO_DEPRECATE)
 else()
     add_compile_options(-Wall -Wextra -Werror)
 endif()
